@@ -42,7 +42,7 @@ public class SplitFile {
     // divides all the data in chunks
     private void splitData(byte[] data){
         // For debug is better a small number, but the real number should be 64000
-        int x = 15000;
+        int x = 64000;
 
         int chunkNo = 0;
         // all the chunks should be with the 64KByte, except the last one that could store less.
