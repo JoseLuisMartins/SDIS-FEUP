@@ -1,4 +1,4 @@
-package utilities;
+package logic;
 
 //Represents the type of message
 public enum MessageType {
