@@ -1,15 +1,53 @@
 package apps.cli;
 
 
+import apps.common.CallBackInterface;
+import apps.common.ServerInterface;
 
-public class BackupClient {
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.Scanner;
+
+public class BackupClient implements CallBackInterface, Serializable {
 
 
-    public static void main(String args[]) throws Exception {
+    public BackupClient() throws RemoteException {
+        super();
+    }
 
-        System.out.print("CLient");
+    public void notify(String message) {
+        System.out.println(message);
 
     }
 
+
+    public static void main(String[] args) {
+        try {
+            // Obtains a reference for the remote object associated with the specified name.
+            Registry reg = LocateRegistry.getRegistry("127.0.0.1",1099);
+            ServerInterface proxy = (ServerInterface) reg.lookup("myServer");
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("What's your nickname? ");
+            String name = scanner.nextLine();
+            if ( ! proxy.join(name, new BackupClient()) ) {
+                System.out.println("Sorry, nickname is already in use.");
+                return;
+            }
+            String message = scanner.nextLine();
+            while(! message.equals("exit")) {
+                if (!message.equals(""))
+                    proxy.tell(name, message);
+                message = scanner.nextLine();
+            }
+            proxy.leave(name);
+            System.exit(0);
+        } catch (Exception e) {
+            System.err.println("Client exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
 
 }
