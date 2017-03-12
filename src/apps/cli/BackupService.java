@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
     public static void main(String args[]) throws Exception {
-        System.out.println("oi");
+        System.out.println("oi1");
         /*try {
             BackupService server = new BackupService();
             Naming.rebind("rmi://localhost/ChatServer", server);
