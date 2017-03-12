@@ -22,4 +22,23 @@ public class ChunkID {
         return fileID;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+
+        if(this == obj)
+            return true;
+        else if(obj == null)
+            return false;
+
+        ChunkID ck = (ChunkID)obj;
+
+        if(this.fileID != ck.getFileID()) {
+            return false;
+        }else{
+            if(this.chunkID != ck.getChunkID())
+                return false;
+        }
+
+        return true;
+    }
 }
