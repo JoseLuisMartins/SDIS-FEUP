@@ -4,13 +4,13 @@ package apps.cli;
 import apps.common.CallBackInterface;
 import apps.common.ServerInterface;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 
-public class BackupClient implements CallBackInterface, Serializable {
+public class BackupClient extends UnicastRemoteObject implements CallBackInterface {
 
 
     public BackupClient() throws RemoteException {
