@@ -12,14 +12,15 @@ import java.util.HashMap;
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
     public static void main(String args[]) throws Exception {
-        try {
+        System.out.println("oi");
+        /*try {
             BackupService server = new BackupService();
             Naming.rebind("rmi://localhost/ChatServer", server);
             System.err.println("Server ready");
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
-        }
+        }*/
     }
 
     private HashMap<String, CallBackInterface> clients = new HashMap<String, CallBackInterface>();
