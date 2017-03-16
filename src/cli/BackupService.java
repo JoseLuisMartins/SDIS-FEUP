@@ -5,6 +5,8 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
+import logic.ChannelType;
+import logic.Message;
 import network.MulticastChannelWrapper;
 
 
@@ -37,20 +39,29 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         String version = args[0];
         int serverId= Integer.parseInt(args[1]);
-        String accessPoint = args[2];
+
 
         //subscribe multicast channels
-        MulticastChannelWrapper mc= new MulticastChannelWrapper(args[3],args[4]);
-        MulticastChannelWrapper mdb= new MulticastChannelWrapper(args[5],args[6]);
-        MulticastChannelWrapper mdr= new MulticastChannelWrapper(args[7],args[8]);
+        MulticastChannelWrapper mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
+        MulticastChannelWrapper mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
+        MulticastChannelWrapper mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
+
+
+
+        //CR-13 LF-10
+
+        Message msg = new Message("PUTCHUNK <Version> 5 <FileId> 6             <ReplicationDeg> " + Character.toString((char)13) + Character.toString((char)10) );
+
+        System.out.println(msg.toString());
+
 
 
 
         BackupService service = new BackupService();
 
-
         //when it's the initiator peer
         try {
+            String accessPoint = args[2];
             Registry reg = LocateRegistry.createRegistry(1099);
             reg.rebind(accessPoint, service);
             System.err.println("Peer ready");
