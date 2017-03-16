@@ -32,6 +32,7 @@ public class FileManager {
     // delete the chunk pass by argument
     public void deleteChunk(Chunk ck){
 
+
         deleteFile("bin\\" + ck.toString());
 
         // it is necessary to free space on disk
@@ -57,6 +58,11 @@ public class FileManager {
     public void deleteFile(String fileName){
 
         File file = new File(fileName);
+
+        if(!file.exists()){
+            System.out.println("The file " + fileName + "don't exist");
+            return;
+        }
 
         file.delete();
     }

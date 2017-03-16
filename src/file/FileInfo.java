@@ -3,25 +3,41 @@ package file;
 
 public class FileInfo {
 
-    private String fileName;
-    private int fileId;
+    private String fileId;
     private long fileSize;
 
-    public FileInfo(String fileName, int fileId, long fileSize){
-        this.fileName = fileName;
+    public FileInfo(String fileId, long fileSize){
         this.fileId = fileId;
         this.fileSize = fileSize;
     }
 
-    public int getFileId() {
+    public String getFileId() {
         return fileId;
     }
+
 
     public long getFileSize() {
         return fileSize;
     }
 
-    public String getFileName() {
-        return fileName;
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if(this == obj)
+            return true;
+        else if(obj == null)
+            return false;
+
+        FileInfo fileInfo = (FileInfo) obj;
+
+        if(this.fileSize != fileInfo.getFileSize()) {
+            return false;
+        }else{
+            if(this.fileId != fileInfo.getFileId())
+                return false;
+        }
+
+        return true;
     }
 }
