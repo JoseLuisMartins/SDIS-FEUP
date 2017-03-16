@@ -4,6 +4,8 @@ package logic;
 //<MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
 //body
 
+import java.io.File;
+
 public class Message {
 
     private String message;
@@ -58,16 +60,53 @@ public class Message {
                 break;
         }
 
-        System.out.println("split Size: " + splitedMsg.length);
-
         //parse body
 
+
+
+
+    }
+
+
+
+    //receives a message type and creates it
+    public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, String replicationDeg,String msgBody) {
+        this.type = type;
+        this.version = version;
+        this.senderId = senderId;
+        this.fileId = fileId;
+        this.chunkNo = chunkNo;
+        this.replicationDeg = replicationDeg;
+        this.messageBody = msgBody;
+
+        String crlf = Character.toString((char)13) + Character.toString((char)10);
+        message = type.toString() + " " + version + " " + senderId + " " + fileId + " ";
+
+        switch (type){
+            case PUTCHUNK:
+                message += chunkNo + " " + replicationDeg + " "  + crlf + crlf;
+                message += " " + messageBody;
+                break;
+            case GETCHUNK:
+            case CHUNK:
+            case REMOVED:
+            case STORED:
+                message += chunkNo + " " + crlf + crlf;
+
+                break;
+            case DELETE:
+                message += crlf + crlf;
+                break;
+        }
 
 
     }
 
     @Override
     public String toString() {
+
+        String[] splitedMsg = message.split(" +");
+
         return "Message{" +
                 "message='" + message + '\'' +
                 ", messageHeader='" + messageHeader + '\'' +
@@ -78,20 +117,8 @@ public class Message {
                 ", fileId='" + fileId + '\'' +
                 ", chunkNo=" + chunkNo +
                 ", replicationDeg='" + replicationDeg + '\'' +
-                '}';
+                '}' + "splitLength-> " +  splitedMsg.length;
     }
-
-    //receives a message type and creates it
-    public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, String replicationDeg) {
-        this.type = type;
-        this.version = version;
-        this.senderId = senderId;
-        this.fileId = fileId;
-        this.chunkNo = chunkNo;
-        this.replicationDeg = replicationDeg;
-    }
-
-
 
 
 }

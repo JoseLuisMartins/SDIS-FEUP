@@ -6,10 +6,11 @@ import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
 import logic.ChannelType;
-import logic.Message;
+import logic.Utils;
 import network.MulticastChannelWrapper;
 
 
+import javax.rmi.CORBA.Util;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -42,32 +43,36 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
         //subscribe multicast channels
-        MulticastChannelWrapper mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
-        MulticastChannelWrapper mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
-        MulticastChannelWrapper mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
+        Utils.mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
+        Utils.mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
+        Utils.mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
 
-
-
+        /*
+        //message debug
         //CR-13 LF-10
-
-        Message msg = new Message("PUTCHUNK <Version> 5 <FileId> 6             <ReplicationDeg> " + Character.toString((char)13) + Character.toString((char)10) );
-
+        Message msg = new Message("PUTCHUNK <Version> 5 <FileId> 6             <ReplicationDeg> " + Character.toString((char)13) + Character.toString((char)10));
         System.out.println(msg.toString());
 
-
+        // public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, String replicationDeg,String msgBody)
+        //CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
+        Message nMsg = new Message(MessageType.PUTCHUNK,"1.0",1,"hash_Sha256",1,"5","body");
+        System.out.println(nMsg.toString());
+        */
 
 
         BackupService service = new BackupService();
 
-        //when it's the initiator peer
-        try {
-            String accessPoint = args[2];
-            Registry reg = LocateRegistry.createRegistry(1099);
-            reg.rebind(accessPoint, service);
-            System.err.println("Peer ready");
-        } catch (Exception e) {
-            System.err.println("Peer exception: " + e.toString());
-            e.printStackTrace();
+        String accessPoint = args[2];
+        if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
+            try {
+
+                Registry reg = LocateRegistry.createRegistry(1099);
+                reg.rebind(accessPoint, service);
+                System.err.println("Peer ready");
+            } catch (Exception e) {
+                System.err.println("Peer exception: " + e.toString());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -75,6 +80,20 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
     protected BackupService() throws RemoteException {
         super();
+
+
+        //start the threads
+/*
+        Thread threadMc = new Thread(Utils.mc);
+        threadMc.start();
+
+        Thread threadMdb = new Thread(Utils.mdb);
+        threadMdb.start();
+
+        Thread threadMdr = new Thread(Utils.mdr);
+        threadMdr.start();*/
+
+
     }
 
 
@@ -82,9 +101,11 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
-        //notify all the other peers based on the request
 
         System.out.println(req.toString());
+        //send messages to all the other peers based on the request
+
+
         callBack.notify("Request handled sucessfully");
     }
 

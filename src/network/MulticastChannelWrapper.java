@@ -40,11 +40,13 @@ public class MulticastChannelWrapper implements Runnable{
         while(true){
             try {
                 //receive message
+                //todo check the length
                 byte[] receiveData = new byte[1024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 multicastSocket.receive(receivePacket);
 
                 //wait random time and start the thread to handle the message
+
 
 
             } catch (IOException e) {
