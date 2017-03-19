@@ -10,13 +10,17 @@ public class Utils {
     public static MulticastChannelWrapper mc= null;
     public static MulticastChannelWrapper mdb= null;
     public static MulticastChannelWrapper mdr= null;
+    public static String version = null;
+    public static int senderID = -1;
+
+
 
     // the fileId should include encrypted the fileName, modified date and owner(Peer Id)
     public String sha256(String fileName, long date, Integer idOwner){
 
-        String text = new String();
 
-        text = new StringBuilder().append(fileName).append(date).append(idOwner).toString();
+
+        String text = new StringBuilder().append(fileName).append(date).append(idOwner).toString();
 
         MessageDigest mDigest = null;
 

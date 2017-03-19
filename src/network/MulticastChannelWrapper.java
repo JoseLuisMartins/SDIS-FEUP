@@ -41,7 +41,7 @@ public class MulticastChannelWrapper implements Runnable{
             try {
                 //receive message
                 //todo check the length
-                byte[] receiveData = new byte[1024];
+                byte[] receiveData = new byte[64*1024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 multicastSocket.receive(receivePacket);
 

@@ -4,13 +4,24 @@ package logic;
 //<MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
 //body
 
-import java.io.File;
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class Message {
 
-    private String message;
-    private String messageHeader;
-    private String messageBody;
+    public static final char CR = 0xD;
+    public static final char LF = 0xA;
+    public static final String CRLF = "" + CR + LF;
+    public static final int HEADER = 0;
+    public static final int BODY = 1;
+    public static final char SEPARATOR =  ' ';
+
+    private byte[] message;
+    private byte[] messageHeader;
+    private byte[] messageBody;
 
 
     //header params
@@ -19,58 +30,58 @@ public class Message {
     private int senderId;
     private String fileId;
     private int chunkNo;
-    //This field together with the FileId specifies a chunk in the file. The chunk numbers are integers and should be assigned sequentially starting at 0.
-    // It is encoded as a sequence of ASCII characters corresponding to the decimal representation of that number, with the most significant digit first.
-    // The length of this field is variable, but should not be larger than 6 chars. Therefore, each file can have at most one million chunks.
-    // Given that each chunk is 64 KByte, this limits the size of the files to backup to 64 GByte.
-    private String replicationDeg;
-    //This field contains the desired replication degree of the chunk. This is a digit, thus allowing a replication degree of up to 9. It takes one byte, which is the ASCII code of that digit.
-
-
+    private int replicationDeg;
 
 
 
 
     //receives a message and parses it
     //not checking message integrity at the moment
-    public Message(String msg) {
+    public Message(byte[] msg) {
+
         this.message=msg;
+        String msgString = new String(msg,StandardCharsets.US_ASCII);
 
-        String[] splitedMsg = message.split(" +");
+        String[] messageFields = msgString.split(CRLF + CRLF );
 
-        this.type = MessageType.valueOf(splitedMsg[0]);
 
-        this.version = splitedMsg[1];
-        this.senderId = Integer.parseInt(splitedMsg[2]);
-        this.fileId = splitedMsg[3];
+        String[] headerFields = messageFields[HEADER].split(" +");
+
+        this.type = MessageType.valueOf(headerFields[0]);
+        this.message = msg;
+        this.version = headerFields[1];
+        this.senderId = Integer.parseInt(headerFields[2]);
+        this.fileId = headerFields[3];
 
         //parse header
         switch (type){
             case PUTCHUNK://PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
-                this.chunkNo = Integer.parseInt(splitedMsg[4]);
-                this.replicationDeg = splitedMsg[5];
+                this.chunkNo = Integer.parseInt(headerFields[4]);
+                this.replicationDeg = Integer.parseInt(headerFields[5]);
                 break;
             case GETCHUNK://GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
             case CHUNK://CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
             case REMOVED://REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
             case STORED://STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-                this.chunkNo = Integer.parseInt(splitedMsg[4]);
+                this.chunkNo = Integer.parseInt(headerFields[4]);
                 break;
             case DELETE://DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
                 break;
         }
 
+
+        this.messageHeader = messageFields[HEADER].toString().getBytes(StandardCharsets.US_ASCII);
+
         //parse body
 
-
-
+        this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
 
     }
 
 
 
     //receives a message type and creates it
-    public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, String replicationDeg,String msgBody) {
+    public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, int replicationDeg,byte[] msgBody) {
         this.type = type;
         this.version = version;
         this.senderId = senderId;
@@ -79,36 +90,47 @@ public class Message {
         this.replicationDeg = replicationDeg;
         this.messageBody = msgBody;
 
-        String crlf = Character.toString((char)13) + Character.toString((char)10);
-        message = type.toString() + " " + version + " " + senderId + " " + fileId + " ";
 
+        StringBuilder sb = new StringBuilder().append(type.toString()).append(SEPARATOR).append(version).append(SEPARATOR).append(senderId).append(SEPARATOR).append(fileId).append(SEPARATOR);
+
+
+        //header
         switch (type){
             case PUTCHUNK:
-                message += chunkNo + " " + replicationDeg + " "  + crlf + crlf;
-                message += " " + messageBody;
+                sb.append(chunkNo).append(SEPARATOR).append(replicationDeg).append(SEPARATOR).append(CRLF).append(CRLF);
                 break;
             case GETCHUNK:
             case CHUNK:
             case REMOVED:
             case STORED:
-                message += chunkNo + " " + crlf + crlf;
-
+                sb.append(chunkNo).append(SEPARATOR).append(SEPARATOR).append(CRLF).append(CRLF);
                 break;
             case DELETE:
-                message += crlf + crlf;
+                sb.append(CRLF).append(CRLF);
                 break;
         }
 
+        this.messageHeader = sb.toString().getBytes(StandardCharsets.US_ASCII);
 
+        //body
+        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK)
+            sb.append(new String(msgBody,StandardCharsets.US_ASCII));
+
+
+        this.message = sb.toString().getBytes(StandardCharsets.US_ASCII);
+
+    }
+
+    public byte[] getMessage() {
+        return message;
     }
 
     @Override
     public String toString() {
 
-        String[] splitedMsg = message.split(" +");
-
+        String str= new String(message);
         return "Message{" +
-                "message='" + message + '\'' +
+                "message='" + str + '\'' +
                 ", messageHeader='" + messageHeader + '\'' +
                 ", messageBody='" + messageBody + '\'' +
                 ", type=" + type +
@@ -117,7 +139,7 @@ public class Message {
                 ", fileId='" + fileId + '\'' +
                 ", chunkNo=" + chunkNo +
                 ", replicationDeg='" + replicationDeg + '\'' +
-                '}' + "splitLength-> " +  splitedMsg.length;
+                '}';
     }
 
 

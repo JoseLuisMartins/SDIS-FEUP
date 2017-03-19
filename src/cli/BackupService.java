@@ -6,12 +6,15 @@ import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
 import logic.ChannelType;
+import logic.Message;
+import logic.MessageType;
 import logic.Utils;
 import network.MulticastChannelWrapper;
 
 
 import javax.rmi.CORBA.Util;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -42,26 +45,17 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         int serverId= Integer.parseInt(args[1]);
 
 
-        //subscribe multicast channels
+        //subscribe multicast channels and parse variables
         Utils.mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
         Utils.mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
         Utils.mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
-
-        /*
-        //message debug
-        //CR-13 LF-10
-        Message msg = new Message("PUTCHUNK <Version> 5 <FileId> 6             <ReplicationDeg> " + Character.toString((char)13) + Character.toString((char)10));
-        System.out.println(msg.toString());
-
-        // public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, String replicationDeg,String msgBody)
-        //CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
-        Message nMsg = new Message(MessageType.PUTCHUNK,"1.0",1,"hash_Sha256",1,"5","body");
-        System.out.println(nMsg.toString());
-        */
+        Utils.version= args[0];
+        Utils.senderID= Integer.parseInt(args[1]);
 
 
         BackupService service = new BackupService();
 
+        //bind remote object
         String accessPoint = args[2];
         if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
             try {
@@ -78,12 +72,24 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
 
+
+
     protected BackupService() throws RemoteException {
         super();
 
 
+        //message debug /**/
+
+        Message nMsg = new Message(MessageType.PUTCHUNK,"1.0",1,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
+        System.out.println(nMsg.toString() + " \n \n \n");
+        Message m= new Message(nMsg.getMessage());
+        System.out.println("-----------------------------");
+        System.out.println(m.toString() + " \n \n \n");
+        /**/
+
+        /*
         //start the threads
-/*
+
         Thread threadMc = new Thread(Utils.mc);
         threadMc.start();
 
@@ -91,8 +97,8 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         threadMdb.start();
 
         Thread threadMdr = new Thread(Utils.mdr);
-        threadMdr.start();*/
-
+        threadMdr.start();
+*/
 
     }
 
