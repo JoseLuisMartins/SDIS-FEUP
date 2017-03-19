@@ -14,6 +14,7 @@ import network.MulticastChannelWrapper;
 
 import javax.rmi.CORBA.Util;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -48,7 +49,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
         Utils.mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
         Utils.version= args[0];
-        Utils.senderID= Integer.parseInt(args[1]);
+        Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
 
 
@@ -103,19 +104,19 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         //message debug /**/
 
-        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.senderID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
+        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.peerID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
         System.out.println(nMsg.toString() + " \n \n \n");
         Message m= new Message(nMsg.getMessage());
-        System.out.println("-----------------------------");
+        System.out.println("----------------------------- ");
         System.out.println(m.toString() + " \n \n \n");
         /**/
 
-        try {
-            nMsg.send(Utils.mc);
-            nMsg.send(Utils.mdb);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        nMsg.send(Utils.mc);
+        nMsg.send(Utils.mc);
+
+
+
 
         callBack.notify("Request handled sucessfully");
     }

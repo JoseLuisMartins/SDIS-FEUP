@@ -6,15 +6,18 @@ import network.MulticastChannelWrapper;
 import java.net.DatagramSocket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 public class Utils {
     public static MulticastChannelWrapper mc= null;
     public static MulticastChannelWrapper mdb= null;
     public static MulticastChannelWrapper mdr= null;
     public static String version = null;
-    public static int senderID = -1;
+    public static int peerID = -1;
     public static DatagramSocket peerSocket=null;
 
+
+    //PUTCHUNK
 
 
     // the fileId should include encrypted the fileName, modified date and owner(Peer Id)
@@ -44,5 +47,25 @@ public class Utils {
         }
 
         return null;
+    }
+
+
+    public static void sleepRandomTime(int limit){
+        Random rn = new Random();
+        int time = rn.nextInt(limit);
+
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static  void sleepSpecificTime(int time){
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

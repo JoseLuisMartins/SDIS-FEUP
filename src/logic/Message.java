@@ -76,14 +76,15 @@ public class Message {
         this.messageHeader = messageFields[HEADER].toString().getBytes(StandardCharsets.US_ASCII);
 
         //parse body
-
-        this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
+        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK)
+         this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
 
     }
 
 
 
     //receives a message type and creates it
+    //TODO refractor-> make method for each type
     public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, int replicationDeg,byte[] msgBody) {
         this.type = type;
         this.version = version;
@@ -124,14 +125,47 @@ public class Message {
 
     }
 
+
+
     public byte[] getMessage() {
         return message;
     }
 
-    public void send(MulticastChannelWrapper channel) throws IOException {
-        DatagramPacket sendPacket = new DatagramPacket(message, message.length, channel.getAddress(), channel.getPort());
-        Utils.peerSocket.send(sendPacket);
+
+    public MessageType getType() {
+        return type;
     }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public int getSenderId() {
+        return senderId;
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public int getChunkNo() {
+        return chunkNo;
+    }
+
+    public int getReplicationDeg() {
+        return replicationDeg;
+    }
+
+    public void send(MulticastChannelWrapper channel)  {
+        try {
+            DatagramPacket sendPacket = new DatagramPacket(message, message.length, channel.getAddress(), channel.getPort());
+            Utils.peerSocket.send(sendPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @Override
     public String toString() {

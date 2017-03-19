@@ -52,32 +52,6 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
 
         try {
 
-//Test-------------------------------Multicast Channels
-            //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
-            DatagramSocket serverSocket = new DatagramSocket();
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-
-                @Override
-                public void run() {
-                    try {
-                        System.out.println("Advertising");
-                        InetAddress address = InetAddress.getByName("224.0.0.2");
-
-                        byte[] answer = "Boas sou o server!!!".getBytes();
-                        DatagramPacket sendPacket = new DatagramPacket(answer, answer.length, address, 2223);
-                        serverSocket.send(sendPacket);
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, 0, 4000);
-//-----------------------
-
-
-
 
             // Obtains a reference for the remote object associated with the specified name.
             Registry reg = LocateRegistry.getRegistry("127.0.0.1",1099);
