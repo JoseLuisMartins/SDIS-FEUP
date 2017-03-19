@@ -1,6 +1,8 @@
 package common;
 
 
+import logic.ProtocolType;
+
 import java.io.Serializable;
 
 public class Request implements Serializable {
@@ -14,29 +16,29 @@ public class Request implements Serializable {
         this.opnd1=null;
         this.opnd2=null;
 
-        operation=args[1];
+        this.operation= args[1];
 
 
 
-        switch (operation){
-            case "BACKUP":
+        switch (ProtocolType.valueOf(operation)){
+            case BACKUP:
                 if(args.length == 4) {
                     validRequest = true;
                     opnd1 = args[2];//file path
                     opnd2 = args[3]; // replication degree
                 }
                 break;
-            case "RESTORE":
+            case RESTORE:
                 if(args.length == 3) {
                     validRequest = true;
                     opnd1=args[2];//file path
                 }
-            case "DELETE":
+            case DELETE:
                 if(args.length == 3) {
                     validRequest = true;
                     opnd1=args[2];//file path
                 }
-            case "RECLAIM":
+            case RECLAIM:
                 if(args.length == 3) {
                     validRequest = true;
                     opnd1=args[2];//reclaimed space (Kb)
@@ -49,7 +51,17 @@ public class Request implements Serializable {
 
     }
 
+    public String getOpnd1() {
+        return opnd1;
+    }
 
+    public int getReplication() {
+        return Integer.parseInt(opnd2);
+    }
+
+    public String getOperation() {
+        return operation;
+    }
 
     public boolean isValid(){
         return validRequest;

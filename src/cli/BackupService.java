@@ -5,14 +5,14 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
-import logic.ChannelType;
-import logic.Message;
-import logic.MessageType;
-import logic.Utils;
+import file.ChunkID;
+import file.SplitFile;
+import logic.*;
 import network.MulticastChannelWrapper;
 
 
 import javax.rmi.CORBA.Util;
+import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.DatagramSocket;
@@ -69,6 +69,8 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 e.printStackTrace();
             }
         }
+
+
     }
 
 
@@ -95,31 +97,64 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
 
+
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
-
+    /*
         System.out.println(req.toString());
         //send messages to all the other peers based on the request
 
 
-        //message debug /**/
+        //message debug
 
-        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.peerID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
+        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.senderID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
         System.out.println(nMsg.toString() + " \n \n \n");
         Message m= new Message(nMsg.getMessage());
-        System.out.println("----------------------------- ");
+        System.out.println("-----------------------------");
         System.out.println(m.toString() + " \n \n \n");
-        /**/
 
 
-        nMsg.send(Utils.mc);
-        nMsg.send(Utils.mc);
+        try {
+            nMsg.send(Utils.mc);
+            nMsg.send(Utils.mdb);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    */
+        switch (ProtocolType.valueOf(req.getOperation())){
+            case BACKUP:
+                File file = new File(req.getOpnd1());
+                try {
+                    SplitFile sp = new SplitFile(file);
+
+                    for (int i = 0; i < sp.getChunksList().size(); i++){
+                        ChunkID ck = sp.getChunksList().get(i).getId();
+                        Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, ck.getFileID(),ck.getChunkID(),req.getReplication(),sp.getChunksList().get(i).getContent());
+
+                        Message m= new Message(msg.getMessage());
+                        System.out.println("-----------------------------");
+                        System.out.println(m.toString() + " \n \n \n");
+
+                        msg.send(Utils.mdb);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case DELETE:
+                break;
+            case RECLAIM:
+                break;
+            case RESTORE:
+                break;
+        }
 
 
 
 
         callBack.notify("Request handled sucessfully");
     }
+
 
 
 

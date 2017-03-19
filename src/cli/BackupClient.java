@@ -47,6 +47,7 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
         //validate and contruct the request
         String accessPoint=args[0];
 
+
         Request request = new Request(args);
 
 
