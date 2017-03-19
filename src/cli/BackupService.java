@@ -14,6 +14,7 @@ import network.MulticastChannelWrapper;
 
 import javax.rmi.CORBA.Util;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -41,9 +42,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             return;
         }
 
-        String version = args[0];
-        int serverId= Integer.parseInt(args[1]);
-
 
         //subscribe multicast channels and parse variables
         Utils.mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
@@ -51,12 +49,14 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.mdr= new MulticastChannelWrapper(args[7],args[8],ChannelType.RESTORE_CHANNEL);
         Utils.version= args[0];
         Utils.senderID= Integer.parseInt(args[1]);
+        Utils.peerSocket=new DatagramSocket();
 
 
         BackupService service = new BackupService();
 
         //bind remote object
         String accessPoint = args[2];
+
         if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
             try {
 
@@ -78,16 +78,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         super();
 
 
-        //message debug /**/
-
-        Message nMsg = new Message(MessageType.PUTCHUNK,"1.0",1,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
-        System.out.println(nMsg.toString() + " \n \n \n");
-        Message m= new Message(nMsg.getMessage());
-        System.out.println("-----------------------------");
-        System.out.println(m.toString() + " \n \n \n");
-        /**/
-
-        /*
         //start the threads
 
         Thread threadMc = new Thread(Utils.mc);
@@ -98,10 +88,9 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         Thread threadMdr = new Thread(Utils.mdr);
         threadMdr.start();
-*/
+
 
     }
-
 
 
 
@@ -111,6 +100,22 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         System.out.println(req.toString());
         //send messages to all the other peers based on the request
 
+
+        //message debug /**/
+
+        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.senderID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
+        System.out.println(nMsg.toString() + " \n \n \n");
+        Message m= new Message(nMsg.getMessage());
+        System.out.println("-----------------------------");
+        System.out.println(m.toString() + " \n \n \n");
+        /**/
+
+        try {
+            nMsg.send(Utils.mc);
+            nMsg.send(Utils.mdb);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         callBack.notify("Request handled sucessfully");
     }

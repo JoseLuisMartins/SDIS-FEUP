@@ -5,7 +5,10 @@ package logic;
 //body
 
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+import network.MulticastChannelWrapper;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -123,6 +126,11 @@ public class Message {
 
     public byte[] getMessage() {
         return message;
+    }
+
+    public void send(MulticastChannelWrapper channel) throws IOException {
+        DatagramPacket sendPacket = new DatagramPacket(message, message.length, channel.getAddress(), channel.getPort());
+        Utils.peerSocket.send(sendPacket);
     }
 
     @Override

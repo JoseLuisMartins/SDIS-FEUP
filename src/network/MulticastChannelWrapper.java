@@ -2,6 +2,7 @@ package network;
 
 
 import logic.ChannelType;
+import org.omg.PortableInterceptor.INACTIVE;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,6 +13,8 @@ import java.net.MulticastSocket;
 public class MulticastChannelWrapper implements Runnable{
 
     private MulticastSocket multicastSocket;
+    private int port;
+    private InetAddress address;
     private ChannelType type;
 
 
@@ -19,11 +22,11 @@ public class MulticastChannelWrapper implements Runnable{
         this.type = type;
 
         //join multicast group
-        int multicastPortNumber = Integer.parseInt(port);
-        InetAddress multicastAddress = InetAddress.getByName(address);
+        this.port = Integer.parseInt(port);
+        this.address = InetAddress.getByName(address);
         //join multicast group
-        multicastSocket = new MulticastSocket(multicastPortNumber);
-        multicastSocket.joinGroup(multicastAddress);
+        multicastSocket = new MulticastSocket(this.port);
+        multicastSocket.joinGroup(this.address);
 
     }
 
@@ -33,6 +36,17 @@ public class MulticastChannelWrapper implements Runnable{
         multicastSocket.close();
     }
 
+    public MulticastSocket getMulticastSocket() {
+        return multicastSocket;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public InetAddress getAddress() {
+        return address;
+    }
 
     @Override
     public void run() {

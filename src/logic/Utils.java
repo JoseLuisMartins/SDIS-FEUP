@@ -3,6 +3,7 @@ package logic;
 
 import network.MulticastChannelWrapper;
 
+import java.net.DatagramSocket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -12,6 +13,7 @@ public class Utils {
     public static MulticastChannelWrapper mdr= null;
     public static String version = null;
     public static int senderID = -1;
+    public static DatagramSocket peerSocket=null;
 
 
 
