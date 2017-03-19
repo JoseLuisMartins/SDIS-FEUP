@@ -152,6 +152,10 @@ public class Message {
         return chunkNo;
     }
 
+    public byte[] getMessageBody() {
+        return messageBody;
+    }
+
     public int getReplicationDeg() {
         return replicationDeg;
     }
