@@ -5,12 +5,11 @@ public class Chunk{
 
     private ChunkID id;
     private byte[] content;
-    private int replication;
 
-    public Chunk(String fileID , int chunkNo, byte[] content, int replication){
+    public Chunk(String fileID , int chunkNo, byte[] content){
         this.id = new ChunkID(fileID, chunkNo);
         this.content = content;
-        this.replication = replication;
+
     }
 
     public ChunkID getId(){
@@ -21,9 +20,7 @@ public class Chunk{
         return content;
     }
 
-    public int getReplication() {
-        return replication;
-    }
+
 
     public int getSizeOfData(){
         return content.length;

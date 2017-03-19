@@ -9,9 +9,7 @@ import network.MulticastChannelWrapper;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class Message {
 
@@ -122,7 +120,10 @@ public class Message {
 
 
         this.message = sb.toString().getBytes(StandardCharsets.US_ASCII);
+    }
 
+
+    public Message(MessageType type, String version, int senderId,String FileId) {
     }
 
 

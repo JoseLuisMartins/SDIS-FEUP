@@ -11,12 +11,9 @@ import logic.*;
 import network.MulticastChannelWrapper;
 
 
-import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.DatagramSocket;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -51,6 +48,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.version= args[0];
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
+        Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
 
 
         BackupService service = new BackupService();

@@ -3,7 +3,6 @@ package file;
 
 import logic.Utils;
 
-import javax.swing.text.Utilities;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,14 +55,14 @@ public class SplitFile {
         int chunkNo = 0;
         // all the chunks should be with the 64KByte, except the last one that could store less.
         for (int i = 0; i < data.length - x + 1; i += x) {
-            Chunk chunk = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, i, i + x), 3);
+            Chunk chunk = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, i, i + x));
             chunksList.add(chunk);
             chunkNo++;
         }
 
 
         if (data.length % x != 0) {
-            Chunk ck = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, data.length - data.length % x, data.length), 3);
+            Chunk ck = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, data.length - data.length % x, data.length));
             chunksList.add(ck);
         }
     }

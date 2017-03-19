@@ -1,6 +1,10 @@
 package logic;
 
 
+import file.Chunk;
+
+import static management.FileManager.saveChunk;
+
 public class HandleReceivedMessage implements Runnable {
 
     private Message msg;
@@ -20,8 +24,13 @@ public class HandleReceivedMessage implements Runnable {
         switch (msg.getType()){
             case PUTCHUNK:
                 if(!peerIsTheSender) { // A peer must never store the chunks of its own files.
+                    
 
                     //TODO MARCELO --- guardar o chunk -> msg.getMessageBody(); talvez numa thread á partes uma vez que o acesso ao disco é puxado
+                    Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
+                    saveChunk(chunk);
+
+
                     //TODO if it's the first time add chunk replication degree to the chunk metadata file
 
 

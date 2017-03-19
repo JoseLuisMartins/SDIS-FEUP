@@ -15,10 +15,10 @@ public class Utils {
     public static String version = null;
     public static int peerID = -1;
     public static DatagramSocket peerSocket=null;
+    public static String CHUNKS_FOLDER_NAME;
+
+
     //PUTCHUNK
-
-
-
 
 
     // the fileId should include encrypted the fileName, modified date and owner(Peer Id)

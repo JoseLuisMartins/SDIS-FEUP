@@ -3,31 +3,32 @@ package management;
 import file.Chunk;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static logic.Utils.CHUNKS_FOLDER_NAME;
 
 // this class will be used to file management
 public class FileManager {
 
 
     // save the chunk pass by argument
-    public void saveChunk(Chunk ck) throws FileNotFoundException {
+    public static void saveChunk(Chunk ck) {
 
-        createFolder("chunks\\");
 
-        StringBuilder path = new StringBuilder().append("chunks\\").append(ck.getId().getFileID()).append("\\");
+        createFolder(CHUNKS_FOLDER_NAME);
+
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(ck.getId().getFileID());
 
         createFolder(path.toString());
 
-        path.append(ck.getId().getChunkID());
+        path.append("/").append(ck.getId().getChunkID());
 
         File file = new File(path.toString());
 
-        FileOutputStream fout = new FileOutputStream(file);
-
         try {
+            FileOutputStream fout = new FileOutputStream(file);
             fout.write(ck.getContent());
             fout.flush();
             fout.close();
@@ -37,10 +38,10 @@ public class FileManager {
     }
 
     // delete the chunk pass by argument
-    public void deleteChunk(Chunk ck){
+    public static void deleteChunk(Chunk ck){
 
 
-        StringBuilder path = new StringBuilder().append("chunks\\").append(ck.toString());
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append(ck.toString());
         deleteFile(path.toString());
 
         // it is necessary to free space on disk
@@ -48,7 +49,7 @@ public class FileManager {
     }
 
     // restore a file
-    public void restoreFile(ArrayList<Chunk> chunks, String fileName) throws IOException {
+    public static void restoreFile(ArrayList<Chunk> chunks, String fileName) throws IOException {
         // Assuming that the chunks already came ordered
 
         File file = new File(fileName);
@@ -63,7 +64,7 @@ public class FileManager {
     }
 
     // delete a file with the name pass by argument
-    public void deleteFile(String fileName){
+    public static void deleteFile(String fileName){
 
         File file = new File(fileName);
 
@@ -75,7 +76,7 @@ public class FileManager {
         file.delete();
     }
 
-    private void createFolder(String folderName){
+    private static void createFolder(String folderName){
 
         File dir = new File(folderName);
 
