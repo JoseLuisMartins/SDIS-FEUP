@@ -5,10 +5,14 @@ public class FileInfo {
 
     private String fileId;
     private long fileSize;
+    private int replication;
+    private String path;
 
-    public FileInfo(String fileId, long fileSize){
+    public FileInfo(String fileId, long fileSize, int replication, String path){
         this.fileId = fileId;
         this.fileSize = fileSize;
+        this.replication = replication;
+        this.path = path;
     }
 
     public String getFileId() {
@@ -20,6 +24,13 @@ public class FileInfo {
         return fileSize;
     }
 
+    public int getReplication() {
+        return replication;
+    }
+
+    public String getPath() {
+        return path;
+    }
 
     @Override
     public boolean equals(Object obj) {

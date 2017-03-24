@@ -112,7 +112,7 @@ public class MulticastChannelWrapper implements Runnable{
 
                     if(!hasChunk(chunkId)) {
                         saveChunk(chunk); //verificar o espaço antes de guardar
-                        Utils.metadata.addChunk(chunkId.toString(),msg.getReplicationDeg());
+                        Utils.metadata.addChunk(chunkId.toString(),msg.getReplicationDeg(),chunk.getSizeOfData());
                     }
 
                     Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());

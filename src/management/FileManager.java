@@ -147,6 +147,22 @@ public class FileManager {
 
     }
 
+    public static long getSizeOfFolder(File folder) {
+        long length = 0;
+
+        File[] files = folder.listFiles();
+
+        int count = files.length;
+
+        for (int i = 0; i < count; i++) {
+            if (files[i].isFile()) {
+                length += files[i].length();
+            } else {
+                length += getSizeOfFolder(files[i]);
+            }
+        }
+        return length;
+    }
     public static int getUsedSpace(){
         return 0;
     }

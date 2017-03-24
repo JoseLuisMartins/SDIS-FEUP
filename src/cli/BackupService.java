@@ -11,6 +11,7 @@ import logic.*;
 import network.MulticastChannelWrapper;
 
 
+import javax.swing.text.html.HTMLDocument;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -18,7 +19,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 
+import static logic.Utils.CHUNKS_FOLDER_NAME;
+import static management.FileManager.getSizeOfFolder;
 import static management.FileManager.loadMetadata;
 import static management.FileManager.saveMetadata;
 import static network.Protocol.startBackup;
@@ -53,7 +59,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.version= args[0];
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
-        Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
+        CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
         loadMetadata();
 
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
@@ -64,7 +70,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 System.out.println(Utils.metadata.toString());
             }
         }, "Shutdown-thread"));
-
 
 
 
@@ -116,27 +121,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
-    /*
-        System.out.println(req.toString());
-        //send messages to all the other peers based on the request
 
-
-        //message debug
-
-        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.senderID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
-        System.out.println(nMsg.toString() + " \n \n \n");
-        Message m= new Message(nMsg.getMessage());
-        System.out.println("-----------------------------");
-        System.out.println(m.toString() + " \n \n \n");
-
-
-        try {
-            nMsg.send(Utils.mc);
-            nMsg.send(Utils.mdb);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    */
         switch (req.getOperation()){
             case BACKUP:
                 try {
@@ -157,6 +142,53 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             case RESTORE:
                 //add
                 break;
+            case STATE:
+                /*
+                * This operation allows to observe the service state. In response to such a request,
+                 * the peer shall send to the client the following information:
+                   For each file whose backup it has initiated:
+                    The file pathname
+                    The backup service id of the file
+                    The desired replication degree
+                    For each chunk of the file:
+                    Its id
+                    Its perceived replication degree
+                    For each chunk it stores:
+                        Its id
+                        Its size (in KBytes)
+                        Its perceived replication degree
+                    The peer's storage capacity, i.e. the maximum amount of disk space that
+                    can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
+                * */
+                ///System.out.println("-------- SERVICE STATE --------");
+
+
+                //Iterator it = Utils.metadata.getChunksMetadata().entrySet().iterator();
+                /*
+                    For eache chunk should print:
+                        - id
+                        - size
+                        - replication degree
+                 */
+
+    /*
+                System.out.println("---- CHUNKS SAVED-----");
+                while (it.hasNext()){
+                    Map.Entry pair = (Map.Entry)it.next();
+                    System.out.print("ID: ");
+                    System.out.println(pair.getKey());
+                    System.out.print("Size: ");
+                    System.out.println("");
+                    System.out.print("Replication degree: ");
+                    System.out.println(pair.getValue());
+
+                }
+
+                System.out.print("Maximum amount of disk: ");
+                System.out.println(Utils.metadata.getMaximumDiskSpace());
+                */
+                break;
+
         }
 
 
