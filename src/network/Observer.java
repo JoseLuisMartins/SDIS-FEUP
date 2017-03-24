@@ -25,9 +25,8 @@ public class Observer {
 
     public int getPutChunkNumber(MessageType type , String FileId, int chunkNo){
         int res=0;
-        System.out.println("--------------getPutChunkNumber-----------------");
+
         for (Message m: receivedMessages) {
-            System.out.println(new String(m.getMessage()));
             if(m.getType() == type && FileId.equals(m.getFileId()) && chunkNo == m.getChunkNo())
                 res++;
         }

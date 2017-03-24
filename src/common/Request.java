@@ -1,12 +1,10 @@
 package common;
 
 
-import logic.ProtocolType;
-
 import java.io.Serializable;
 
 public class Request implements Serializable {
-    private String operation;
+    private ProtocolType operation;
     private String opnd1;
     private String opnd2;
     private boolean validRequest;
@@ -16,11 +14,11 @@ public class Request implements Serializable {
         this.opnd1=null;
         this.opnd2=null;
 
-        this.operation= args[1];
+        this.operation= ProtocolType.valueOf(args[1]);
 
 
 
-        switch (ProtocolType.valueOf(operation)){
+        switch (operation){
             case BACKUP:
                 if(args.length == 4) {
                     validRequest = true;
@@ -59,7 +57,7 @@ public class Request implements Serializable {
         return Integer.parseInt(opnd2);
     }
 
-    public String getOperation() {
+    public ProtocolType getOperation() {
         return operation;
     }
 

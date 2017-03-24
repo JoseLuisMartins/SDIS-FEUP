@@ -3,10 +3,9 @@ package cli;
 
 
 import common.CallBackInterface;
+import common.ProtocolType;
 import common.Request;
 import common.ServerInterface;
-import file.Chunk;
-import file.ChunkID;
 import file.SplitFile;
 import logic.*;
 import network.MulticastChannelWrapper;
@@ -20,7 +19,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static management.FileManager.hasChunk;
 import static management.FileManager.loadMetadata;
 import static management.FileManager.saveMetadata;
 import static network.Protocol.startBackup;
@@ -139,29 +137,13 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             e.printStackTrace();
         }
     */
-        switch (ProtocolType.valueOf(req.getOperation())){
+        switch (req.getOperation()){
             case BACKUP:
                 try {
-                    SplitFile sf = new SplitFile(new File(req.getOpnd1()));
-                    startBackup(sf.getChunksList(), req.getReplication());
-
+                    startBackup(req.getOpnd1(), req.getReplication());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                /*File file = new File(req.getOpnd1());
-                try {
-                    SplitFile sp = new SplitFile(file);
-
-                    for (int i = 0; i < sp.getChunksList().size(); i++){
-                        ChunkID ck = sp.getChunksList().get(i).getId();
-                        Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, ck.getFileID(),ck.getChunkID(),req.getReplication(),sp.getChunksList().get(i).getContent());
-                        msg.send(Utils.mdb);
-
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
                 break;
             case DELETE:
                 File f = new File(req.getOpnd1());

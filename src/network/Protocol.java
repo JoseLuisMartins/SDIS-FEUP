@@ -1,11 +1,16 @@
 package network;
 
 
+import common.Request;
 import file.Chunk;
 import file.ChunkID;
+import file.SplitFile;
 import logic.Message;
 import logic.MessageType;
 import logic.Utils;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static logic.Utils.sleepSpecificTime;
@@ -14,7 +19,9 @@ public class Protocol {
     public static int MAX_PUTCHUNK_TRIES = 5;
 
 
-    public static void startBackup(ArrayList<Chunk> chunkList, int replicationDegree){
+    public static void startBackup(String pathName, int replicationDegree) throws IOException {
+        SplitFile sf = new SplitFile(new File(pathName));
+        ArrayList<Chunk> chunkList = sf.getChunksList();
 
 
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
@@ -34,7 +41,7 @@ public class Protocol {
                 sleepSpecificTime(time_interval);
                 //check responses
                 obs.stop();
-                System.out.println("Number-> " +  obs.getPutChunkNumber(MessageType.PUTCHUNK,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "j-> " + j);
+                System.out.println("Number-> " +  obs.getPutChunkNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
 
                 if(obs.getPutChunkNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
                     break;
