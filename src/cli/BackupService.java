@@ -5,6 +5,7 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
+import file.Chunk;
 import file.ChunkID;
 import file.SplitFile;
 import logic.*;
@@ -19,8 +20,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import static management.FileManager.hasChunk;
 import static management.FileManager.loadMetadata;
 import static management.FileManager.saveMetadata;
+import static network.Protocol.startBackup;
 
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
@@ -55,6 +58,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
         loadMetadata();
 
+        System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
         //shutdown thread
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
@@ -64,8 +68,13 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         }, "Shutdown-thread"));
 
 
-        BackupService service = new BackupService();
 
+
+        //debug------------
+
+        //----------------------
+
+        BackupService service = new BackupService();
         //bind remote object
         String accessPoint = args[2];
 
@@ -132,7 +141,15 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
     */
         switch (ProtocolType.valueOf(req.getOperation())){
             case BACKUP:
-                File file = new File(req.getOpnd1());
+                try {
+                    SplitFile sf = new SplitFile(new File(req.getOpnd1()));
+                    startBackup(sf.getChunksList(), req.getReplication());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                /*File file = new File(req.getOpnd1());
                 try {
                     SplitFile sp = new SplitFile(file);
 
@@ -144,7 +161,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
                 break;
             case DELETE:
                 File f = new File(req.getOpnd1());
@@ -156,6 +173,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
                 break;
             case RESTORE:
+                //add
                 break;
         }
 

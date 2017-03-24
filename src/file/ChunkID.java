@@ -1,7 +1,9 @@
 package file;
 
 
-public class ChunkID {
+import java.io.Serializable;
+
+public class ChunkID implements Serializable{
 
     // obtained applying SHA256 to some bit string
     private String fileID;
@@ -25,22 +27,14 @@ public class ChunkID {
     @Override
     public boolean equals(Object obj) {
 
-        if(this == obj)
-            return true;
-        else if(obj == null)
-            return false;
-
         ChunkID ck = (ChunkID)obj;
 
-        if(this.fileID != ck.getFileID()) {
-            return false;
-        }else{
-            if(this.chunkNo != ck.getChunkID())
-                return false;
-        }
+        if(fileID.equals(ck.getFileID()) && this.chunkNo == ck.getChunkID())
+            return true;
 
-        return true;
+        return false;
     }
+
 
 
     @Override

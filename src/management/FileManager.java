@@ -110,7 +110,7 @@ public class FileManager {
 
 
     public static  void saveMetadata(){
-        File f =new File("metadata");
+        File f =new File("metadata" + Utils.peerID);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(f);
@@ -127,7 +127,7 @@ public class FileManager {
 
 
         try {
-            File myStatsFile = new File("metadata");
+            File myStatsFile = new File("metadata" + Utils.peerID);
 
 
             if(!myStatsFile.exists()){

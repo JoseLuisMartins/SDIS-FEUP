@@ -1,17 +1,18 @@
 package network;
 
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import file.Chunk;
 import file.ChunkID;
 import logic.*;
-import org.omg.PortableInterceptor.INACTIVE;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.Arrays;
+import java.util.*;
 
+import static logic.ChunkManager.manageChunkMessage;
 import static management.FileManager.deleteFileChunks;
 import static management.FileManager.hasFileChunks;
 import static management.FileManager.saveChunk;
@@ -24,10 +25,12 @@ public class MulticastChannelWrapper implements Runnable{
     private int port;
     private InetAddress address;
     private ChannelType type;
+    private Vector<Observer> observers;
 
 
     public MulticastChannelWrapper(String address, String port,ChannelType type) throws IOException {
         this.type = type;
+        this.observers = new Vector<>();
 
         //join multicast group
         this.port = Integer.parseInt(port);
@@ -71,13 +74,22 @@ public class MulticastChannelWrapper implements Runnable{
                 Message msg = new Message(Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()));
                 handleReceivedMessage(msg);
 
-
+                for (Observer obs: observers) {
+                    obs.update(msg);
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
+    }
+
+    public void addObserver(Observer obs){
+        observers.add(obs);
+    }
+
+    public void removeObserver(Observer obs){
+        observers.remove(obs);
     }
 
 
@@ -86,7 +98,7 @@ public class MulticastChannelWrapper implements Runnable{
 
 
         boolean peerIsTheSender=false; //it's the same peer who sent the request
-        if(msg.getSenderId() != Utils.peerID)
+        if(msg.getSenderId() == Utils.peerID)
             peerIsTheSender=true;
 
         ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -97,10 +109,13 @@ public class MulticastChannelWrapper implements Runnable{
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
-                    //verificar o espaço primeiro
-                    saveChunk(chunk);
 
-                    Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),-1,null);
+                    if(!hasChunk(chunkId)) {
+                        saveChunk(chunk); //verificar o espaço antes de guardar
+                        Utils.metadata.addChunk(chunkId.toString(),msg.getReplicationDeg());
+                    }
+
+                    Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
                     Utils.sleepRandomTime(400);
                     response.send(Utils.mc);
                 }
@@ -110,7 +125,7 @@ public class MulticastChannelWrapper implements Runnable{
             case GETCHUNK:
 
                 if(hasChunk(chunkId)){
-                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),-1,null);
+                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
                     Utils.sleepRandomTime(400);
                     //verificar, se neste ponto já tiver sido recebida uma chunk message não enviar!
                     response.send(Utils.mc);
@@ -121,6 +136,8 @@ public class MulticastChannelWrapper implements Runnable{
                 //armazenar só se for meu
                 //verificar se devo armazenar ao mandar os getchunks, guardar em algum lado
                 //mandar para um chunk manager, que decide se guarda o chunk ou não
+                manageChunkMessage(msg);
+
                 break;
             case DELETE:
                 String fileId = msg.getFileId();
@@ -132,13 +149,17 @@ public class MulticastChannelWrapper implements Runnable{
 
                 //if(hasChunk) update chunk metadata
                 //if(delete < chunknumber) initiate putchunk
+                if(hasChunk(chunkId) && !peerIsTheSender) {//it's the peer id
+                    Utils.metadata.updateReplicationDegree(chunkId.toString(),-1);
+                    //if(replication degree < desired)
+                }
 
                 break;
             case STORED:
 
                 //update metadata
                 if(hasChunk(chunkId)) {//it's the peer id
-                    Utils.metadata.incReplicationDegree(chunkId);
+                        Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
                 }
 
                 break;
