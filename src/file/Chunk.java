@@ -9,7 +9,6 @@ public class Chunk{
     public Chunk(String fileID , int chunkNo, byte[] content){
         this.id = new ChunkID(fileID, chunkNo);
         this.content = content;
-
     }
 
     public ChunkID getId(){
@@ -20,16 +19,10 @@ public class Chunk{
         return content;
     }
 
-
-
     public int getSizeOfData(){
         return content.length;
     }
 
-    @Override
-    public String toString() {
-        return new StringBuilder().append(this.id.getFileID()).append(" - ").append(this.id.getChunkID()).toString();
-    }
 
 
 }

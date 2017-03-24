@@ -19,6 +19,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import static management.FileManager.deleteFileChunks;
+
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
@@ -68,6 +70,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             }
         }
 
+        deleteFileChunks("eed53fbc9b82723f7840c4d1a88d5006c525b935837bbaa8913ca8f887c42560");
 
     }
 
@@ -133,6 +136,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                         System.out.println("-----------------------------");
                         System.out.println(m.toString() + " \n \n \n");
 
+
                         msg.send(Utils.mdb);
                     }
                 } catch (IOException e) {
@@ -142,6 +146,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             case DELETE:
                 break;
             case RECLAIM:
+
                 break;
             case RESTORE:
                 break;

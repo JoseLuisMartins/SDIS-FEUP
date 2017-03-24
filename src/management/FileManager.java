@@ -1,13 +1,15 @@
 package management;
 
 import file.Chunk;
+import file.ChunkID;
+import logic.Metadata;
+import logic.Utils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 import static logic.Utils.CHUNKS_FOLDER_NAME;
+import static logic.Utils.metadata;
 
 // this class will be used to file management
 public class FileManager {
@@ -38,15 +40,36 @@ public class FileManager {
     }
 
     // delete the chunk pass by argument
-    public static void deleteChunk(Chunk ck){
+    public static void deleteFileChunks(String fileID){
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(fileID);
+        File folder = new File(path.toString());
 
+        String[]entries = folder.list();
+        for(String s: entries){
+            File currentFile = new File(folder.getPath(),s);
+            currentFile.delete();
+        }
 
-        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append(ck.toString());
         deleteFile(path.toString());
 
-        // it is necessary to free space on disk
-
     }
+
+    public static boolean hasFileChunks(String fileID){
+
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(fileID);
+        File dir = new File(path.toString());
+
+        return dir.exists();
+    }
+
+    public static boolean hasChunk(ChunkID chunkID){
+
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkID.getFileID()).append("/").append(chunkID.getChunkID());
+        File f = new File(path.toString());
+
+        return f.exists();
+    }
+
 
     // restore a file
     public static void restoreFile(ArrayList<Chunk> chunks, String fileName) throws IOException {
@@ -84,4 +107,44 @@ public class FileManager {
             dir.mkdir();
         }
     }
+
+
+    private static  void saveMetadata(){
+        File f =new File("metadata");
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(metadata);
+            os.close();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static  void loadMetadata(){
+
+
+        try {
+            File myStatsFile = new File("metadata");
+
+            if(!myStatsFile.exists()){
+                myStatsFile.createNewFile();
+                Utils.metadata = new Metadata();
+                saveMetadata();
+            }else{
+                FileInputStream fin = new FileInputStream(myStatsFile);
+                ObjectInputStream in = new ObjectInputStream(fin);
+                Utils.metadata = (Metadata) in.readObject();
+                fin.close();
+                in.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
 }

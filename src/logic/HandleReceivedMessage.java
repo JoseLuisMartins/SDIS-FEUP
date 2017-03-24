@@ -2,7 +2,10 @@ package logic;
 
 
 import file.Chunk;
+import file.ChunkID;
 
+import static management.FileManager.deleteFileChunks;
+import static management.FileManager.hasFileChunks;
 import static management.FileManager.saveChunk;
 
 public class HandleReceivedMessage implements Runnable {
@@ -24,20 +27,16 @@ public class HandleReceivedMessage implements Runnable {
         switch (msg.getType()){
             case PUTCHUNK:
                 if(!peerIsTheSender) { // A peer must never store the chunks of its own files.
-                    
 
-                    //TODO MARCELO --- guardar o chunk -> msg.getMessageBody(); talvez numa thread á partes uma vez que o acesso ao disco é puxado
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
                     saveChunk(chunk);
 
 
-                    //TODO if it's the first time add chunk replication degree to the chunk metadata file
-
-
                     Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),-1,null);
-                    //Utils.sleepRandomTime(400);
+                    Utils.sleepRandomTime(400);
                     response.send(Utils.mc);
                 }
+                //verificar no delete porque o putchunk pode ser um chunk meu
 
                 break;
             case GETCHUNK:
@@ -53,15 +52,13 @@ public class HandleReceivedMessage implements Runnable {
 
                 break;
             case CHUNK:
-                if(peerIsTheSender){
-                    //armazenar o chunk
-                }
-
+                //armazenar só se for meu
+                //verificar se devo armazenar ao mandar os getchunks, guardar em algum lado
                 break;
             case DELETE:
-                //if(haschunk) remove it!
-
-
+                String fileId = msg.getFileId();
+                if(hasFileChunks(fileId))
+                    deleteFileChunks(fileId);
 
                 break;
             case REMOVED:
@@ -71,11 +68,12 @@ public class HandleReceivedMessage implements Runnable {
 
                 break;
             case STORED:
+                ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
 
                 if(peerIsTheSender) {//it's the peer id
                     //update current putchunk info
                 }else{
-                    //TODO update replication degree of the chunk metadata file
+                    Utils.metadata.incReplicationDegree(chunkId);
                 }
 
                 break;

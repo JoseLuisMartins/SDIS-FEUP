@@ -16,7 +16,7 @@ public class Utils {
     public static int peerID = -1;
     public static DatagramSocket peerSocket=null;
     public static String CHUNKS_FOLDER_NAME;
-
+    public static Metadata metadata;
 
     //PUTCHUNK
 
