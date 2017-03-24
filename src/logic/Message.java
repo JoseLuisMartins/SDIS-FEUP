@@ -123,7 +123,12 @@ public class Message {
     }
 
 
-    public Message(MessageType type, String version, int senderId,String FileId) {
+    public Message(MessageType type, String version, int senderId,String fileId) {
+        this(type, version, senderId, fileId, -1, -1,null);
+    }
+
+    public Message(MessageType type, String version, int senderId,String fileId, int chunkNo) {
+        this(type, version, senderId, fileId, chunkNo, -1,null);
     }
 
 

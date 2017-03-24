@@ -19,7 +19,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static management.FileManager.deleteFileChunks;
+import static management.FileManager.loadMetadata;
+import static management.FileManager.saveMetadata;
 
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
@@ -27,6 +28,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
     public static void main(String args[]) throws IOException {
         System.out.println("Initiating Peer");
         //ex: java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
+        //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
         if(args.length < 9){
             System.out.println('\n' + "-------- Peer ------" + '\n');
             System.out.println("Usage: java TestApp <protocol_version> <server_id> <service_acess_point> <MC_IP> <MC_Port> <MDB_IP> <MDB_Port> <MDR_IP> <MDR_Port>");
@@ -51,6 +53,15 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
         Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
+        loadMetadata();
+
+        //shutdown thread
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                saveMetadata();
+                System.out.println(Utils.metadata.toString());
+            }
+        }, "Shutdown-thread"));
 
 
         BackupService service = new BackupService();
@@ -70,10 +81,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             }
         }
 
-        deleteFileChunks("eed53fbc9b82723f7840c4d1a88d5006c525b935837bbaa8913ca8f887c42560");
-
     }
-
 
 
 
@@ -131,19 +139,18 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                     for (int i = 0; i < sp.getChunksList().size(); i++){
                         ChunkID ck = sp.getChunksList().get(i).getId();
                         Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, ck.getFileID(),ck.getChunkID(),req.getReplication(),sp.getChunksList().get(i).getContent());
-
-                        Message m= new Message(msg.getMessage());
-                        System.out.println("-----------------------------");
-                        System.out.println(m.toString() + " \n \n \n");
-
-
                         msg.send(Utils.mdb);
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case DELETE:
+                File f = new File(req.getOpnd1());
+                String fileId = Utils.sha256(f.getName(),f.lastModified(),Utils.peerID);
+                Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
+                msg.send(Utils.mc);
                 break;
             case RECLAIM:
 

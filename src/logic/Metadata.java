@@ -3,15 +3,17 @@ package logic;
 import file.ChunkID;
 
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class Metadata{
+public class Metadata implements Serializable{
     private HashMap<ChunkID, Integer> chunksMetadata;
     private int maximumDiskSpace;
 
 
     public Metadata() {
         chunksMetadata = new HashMap<>();
+        maximumDiskSpace = 64000;
     }
 
     public HashMap<ChunkID, Integer> getChunksMetadata() {
@@ -20,6 +22,10 @@ public class Metadata{
 
     public int getMaximumDiskSpace() {
         return maximumDiskSpace;
+    }
+
+    public void setMaximumDiskSpace(int maximumDiskSpace) {
+        this.maximumDiskSpace = maximumDiskSpace;
     }
 
     public void incReplicationDegree(ChunkID chunkId) {
@@ -32,5 +38,11 @@ public class Metadata{
     }
 
 
-
+    @Override
+    public String toString() {
+        return "Metadata{" +
+                "chunksMetadata=" + chunksMetadata +
+                ", maximumDiskSpace=" + maximumDiskSpace +
+                '}';
+    }
 }

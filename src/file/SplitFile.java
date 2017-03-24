@@ -13,14 +13,13 @@ public class SplitFile {
 
     private File file;
     private ArrayList<Chunk> chunksList;
-    private Utils util;
     private String fileId;
 
     public SplitFile(File file) throws IOException {
 
         this.file = file;
         this.chunksList = new ArrayList<Chunk>();
-        this.util = new Utils();
+
 
         split();
     }
@@ -28,7 +27,7 @@ public class SplitFile {
     private void split() throws IOException {
 
         byte[] data = loadFile(this.file);
-        this.fileId = this.util.sha256(this.file.getName(),this.file.lastModified(),1);
+        this.fileId = Utils.sha256(this.file.getName(),this.file.lastModified(),Utils.peerID);
         splitData(data);
 
 

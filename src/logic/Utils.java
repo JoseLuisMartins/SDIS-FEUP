@@ -22,7 +22,7 @@ public class Utils {
 
 
     // the fileId should include encrypted the fileName, modified date and owner(Peer Id)
-    public String sha256(String fileName, long date, Integer idOwner){
+    public static String sha256(String fileName, long date, Integer idOwner){
 
 
 

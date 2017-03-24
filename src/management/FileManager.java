@@ -109,7 +109,7 @@ public class FileManager {
     }
 
 
-    private static  void saveMetadata(){
+    public static  void saveMetadata(){
         File f =new File("metadata");
         FileOutputStream fos = null;
         try {
@@ -123,11 +123,12 @@ public class FileManager {
         }
     }
 
-    private static  void loadMetadata(){
+    public static void loadMetadata(){
 
 
         try {
             File myStatsFile = new File("metadata");
+
 
             if(!myStatsFile.exists()){
                 myStatsFile.createNewFile();
@@ -144,6 +145,10 @@ public class FileManager {
             e.printStackTrace();
         }
 
+    }
+
+    public static int getUsedSpace(){
+        return 0;
     }
 
 
