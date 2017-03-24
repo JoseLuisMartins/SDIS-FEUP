@@ -35,6 +35,7 @@ public class Metadata implements Serializable{
         return chunksMetadata;
     }
 
+
     public int getMaximumDiskSpace() {
         return maximumDiskSpace;
     }
@@ -43,13 +44,21 @@ public class Metadata implements Serializable{
         this.maximumDiskSpace = maximumDiskSpace;
     }
 
+
     public void addChunk(String chunkId,int desiredRepDeg, int size){
-        Integer[] degrees = new Integer[2];
+        Integer[] degrees = new Integer[3];
         degrees[CURRENT_REPLICATION_DEGREE]=1;
         degrees[DESIRED_REPLICATION_DEGREE]=desiredRepDeg;
         degrees[SIZE] = size;
         chunksMetadata.put(chunkId,degrees);
     }
+
+    public void addFile(String path, String fileID, int replication){
+        FileInfo info = new FileInfo( fileID, replication, path);
+
+        filesMetadata.put(fileID, info);
+    }
+
 
     public void updateReplicationDegree(String chunkId,int val) {
         Integer[] currDegree = chunksMetadata.get(chunkId);

@@ -160,10 +160,10 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                     The peer's storage capacity, i.e. the maximum amount of disk space that
                     can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
                 * */
-                ///System.out.println("-------- SERVICE STATE --------");
+                System.out.println("-------- SERVICE STATE --------");
 
 
-                //Iterator it = Utils.metadata.getChunksMetadata().entrySet().iterator();
+                Iterator it = Utils.metadata.getChunksMetadata().entrySet().iterator();
                 /*
                     For eache chunk should print:
                         - id
@@ -171,7 +171,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                         - replication degree
                  */
 
-    /*
+
                 System.out.println("---- CHUNKS SAVED-----");
                 while (it.hasNext()){
                     Map.Entry pair = (Map.Entry)it.next();
@@ -186,7 +186,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
                 System.out.print("Maximum amount of disk: ");
                 System.out.println(Utils.metadata.getMaximumDiskSpace());
-                */
+
                 break;
 
         }
