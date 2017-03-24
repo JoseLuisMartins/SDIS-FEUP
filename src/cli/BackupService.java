@@ -6,6 +6,7 @@ import common.CallBackInterface;
 import common.ProtocolType;
 import common.Request;
 import common.ServerInterface;
+import file.FileInfo;
 import file.SplitFile;
 import logic.*;
 import network.MulticastChannelWrapper;
@@ -144,28 +145,47 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 break;
             case STATE:
                 /*
-                * This operation allows to observe the service state. In response to such a request,
-                 * the peer shall send to the client the following information:
+                  This operation allows to observe the service state. In response to such a request,
+                  the peer shall send to the client the following information:
                    For each file whose backup it has initiated:
                     The file pathname
                     The backup service id of the file
                     The desired replication degree
-                    For each chunk of the file:
-                    Its id
-                    Its perceived replication degree
-                    For each chunk it stores:
+                        For each chunk of the file:
                         Its id
-                        Its size (in KBytes)
                         Its perceived replication degree
-                    The peer's storage capacity, i.e. the maximum amount of disk space that
-                    can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
+
                 * */
                 System.out.println("-------- SERVICE STATE --------");
 
+                Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
 
-                Iterator it = Utils.metadata.getChunksMetadata().entrySet().iterator();
+
+                /*  For each File Should print:
+                        -> pathname
+                        -> id
+                        -> replication degree
+                */
+
+                while(itFiles.hasNext()){
+                    Map.Entry pair = (Map.Entry)itFiles.next();
+
+                    FileInfo info = (FileInfo)pair.getValue();
+
+                    System.out.print("Path: ");
+                    System.out.println(info.getPath());
+
+                    System.out.print("ID: ");
+                    System.out.println(pair.getKey());
+
+                    System.out.print("Replication degree: ");
+                    System.out.println(info.getReplication());
+                }
+
+
+                Iterator itChunks = Utils.metadata.getChunksMetadata().entrySet().iterator();
                 /*
-                    For eache chunk should print:
+                    For each chunk should print:
                         - id
                         - size
                         - replication degree
@@ -173,16 +193,19 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
                 System.out.println("---- CHUNKS SAVED-----");
-                while (it.hasNext()){
-                    Map.Entry pair = (Map.Entry)it.next();
-                    System.out.print("ID: ");
-                    System.out.println(pair.getKey());
-                    System.out.print("Size: ");
-                    System.out.println("");
-                    System.out.print("Replication degree: ");
-                    System.out.println(pair.getValue());
+                   while (itChunks.hasNext()){
+                        Map.Entry pair = (Map.Entry)itChunks.next();
 
+                        System.out.print("ID: ");
+                        System.out.println(pair.getKey());
+
+                        System.out.print("Size: ");
+                        System.out.println(pair.getValue());
+
+                        System.out.print("Replication degree: ");
+                        System.out.println(pair.getValue());
                 }
+
 
                 System.out.print("Maximum amount of disk: ");
                 System.out.println(Utils.metadata.getMaximumDiskSpace());
