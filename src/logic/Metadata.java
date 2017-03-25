@@ -59,6 +59,9 @@ public class Metadata implements Serializable{
         filesMetadata.put(fileID, info);
     }
 
+    public void removeFile(String fileID){
+        filesMetadata.remove(fileID);
+    }
 
     public void updateReplicationDegree(String chunkId,int val) {
         Integer[] currDegree = chunksMetadata.get(chunkId);
