@@ -1,10 +1,10 @@
 package network;
 
 
-import common.Request;
 import file.Chunk;
 import file.ChunkID;
 import file.SplitFile;
+import logic.ChunkManager;
 import logic.Message;
 import logic.MessageType;
 import logic.Utils;
@@ -13,10 +13,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static logic.Utils.sleepRandomTime;
 import static logic.Utils.sleepSpecificTime;
+import static management.FileManager.loadChunk;
+import static management.FileManager.restoreFile;
 
 public class Protocol {
     public static int MAX_PUTCHUNK_TRIES = 5;
+    public static int MAX_GETCHUNK_TRIES = 5;
+
 
 
     public static void startBackup(String pathName, int replicationDegree) throws IOException {
@@ -41,9 +46,9 @@ public class Protocol {
                 sleepSpecificTime(time_interval);
                 //check responses
                 obs.stop();
-                System.out.println("Number-> " +  obs.getPutChunkNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
+                System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
 
-                if(obs.getPutChunkNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
+                if(obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
                     break;
 
                 //try again
@@ -51,6 +56,55 @@ public class Protocol {
             }
 
         }
+
+    }
+
+    public static void startRestore(String pathName){
+        File f = new File(pathName);
+        String fileId = Utils.sha256(f);
+
+        int currChunk=0;
+        ArrayList<Chunk> chunks=new ArrayList<>();
+
+        ChunkManager.validFileIds.add(fileId);
+
+        while (true){
+            Message msg = new Message(MessageType.GETCHUNK, Utils.version, Utils.peerID, fileId, currChunk);
+
+            Observer obs = new Observer(Utils.mdr);
+
+            for (int j = 0 ; j < MAX_GETCHUNK_TRIES; j++) {//maximum of 5 tries
+
+                msg.send(Utils.mdb);
+                sleepSpecificTime(400);
+
+
+                System.out.println("Number-> " +  obs.getMessageNumber(MessageType.CHUNK,fileId,currChunk) + "\nj-> " + j);
+
+                if(obs.getMessageNumber(MessageType.CHUNK,fileId,currChunk) > 0) // already received the chunk
+                    break;
+            }
+
+            obs.stop();
+
+            //TODO REFRACTOR
+            chunks.add(new Chunk(fileId,currChunk,loadChunk(new ChunkID(fileId,currChunk))));
+
+            if(chunks.get(currChunk).getContent().length < 64000)//it's the last chunk
+                break;
+
+            currChunk++;
+        }
+
+        System.out.println("size-> " + chunks.size());
+
+        try {
+            restoreFile(chunks,"testeRESTORE.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ChunkManager.validFileIds.remove(fileId);
 
     }
 

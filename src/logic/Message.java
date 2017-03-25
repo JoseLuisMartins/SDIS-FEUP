@@ -131,6 +131,10 @@ public class Message {
         this(type, version, senderId, fileId, chunkNo, -1,null);
     }
 
+    public Message(MessageType type, String version, int senderId,String fileId, int chunkNo,byte[] msgBody) {
+        this(type, version, senderId, fileId, chunkNo, -1,msgBody);
+    }
+
 
 
     public byte[] getMessage() {

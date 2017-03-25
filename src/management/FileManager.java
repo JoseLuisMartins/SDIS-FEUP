@@ -4,6 +4,7 @@ import file.Chunk;
 import file.ChunkID;
 import logic.Metadata;
 import logic.Utils;
+import sun.misc.IOUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -51,6 +52,29 @@ public class FileManager {
         }
 
         deleteFile(path.toString());
+
+    }
+
+    public static byte[]  loadChunk(ChunkID chunkId){
+
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID()).append("/").append(chunkId.getChunkID());
+        File file = new File(path.toString());
+
+
+        byte[] bytesArray = new byte[(int) file.length()];
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(bytesArray); //read file into bytes[]
+            fis.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return bytesArray;
 
     }
 

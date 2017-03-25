@@ -27,7 +27,7 @@ public class SplitFile {
     private void split() throws IOException {
 
         byte[] data = loadFile(this.file);
-        this.fileId = Utils.sha256(this.file.getName(),this.file.lastModified(),Utils.peerID);
+        this.fileId = Utils.sha256(this.file);
         splitData(data);
 
 

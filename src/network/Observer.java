@@ -23,7 +23,7 @@ public class Observer {
         receivedMessages.add(msg);
     }
 
-    public int getPutChunkNumber(MessageType type , String FileId, int chunkNo){
+    public int getMessageNumber(MessageType type , String FileId, int chunkNo){
         int res=0;
 
         for (Message m: receivedMessages) {
@@ -34,9 +34,12 @@ public class Observer {
         return res;
     }
 
-    public int getTypeNumber(MessageType type){
-        return Collections.frequency(receivedMessages,type);
+
+
+    public boolean existsType(MessageType type){
+        return (Collections.frequency(receivedMessages,type)>0);
     }
+
 
     public void stop(){
         channelToObserve.removeObserver(this);

@@ -32,7 +32,7 @@ public class Metadata implements Serializable{
 
     public void addChunk(String chunkId,int desiredRepDeg){
         Integer[] degrees = new Integer[2];
-        degrees[CURRENT_REPLICATION_DEGREE]=1;
+        degrees[CURRENT_REPLICATION_DEGREE]=0;
         degrees[DESIRED_REPLICATION_DEGREE]=desiredRepDeg;
 
         chunksMetadata.put(chunkId,degrees);
@@ -47,9 +47,16 @@ public class Metadata implements Serializable{
 
     @Override
     public String toString() {
-        return "Metadata{" +
-                "chunksMetadata=" + chunksMetadata +
-                ", maximumDiskSpace=" + maximumDiskSpace +
-                '}';
+        String res="Metadata\n";
+
+        for(HashMap.Entry<String, Integer[]> entry : chunksMetadata.entrySet()) {
+            String key = entry.getKey();
+            Integer[] val = entry.getValue();
+
+            res+= "key-> " + key + " Current_Rep_Deg-> " + val[0] + " Desired_Rep_Deg-> " + val[1] + "\n";
+        }
+
+            res+= "\n  maximumDiskSpace=" + maximumDiskSpace;
+        return res;
     }
 }

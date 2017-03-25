@@ -6,8 +6,11 @@ import common.CallBackInterface;
 import common.ProtocolType;
 import common.Request;
 import common.ServerInterface;
+import file.Chunk;
+import file.ChunkID;
 import file.SplitFile;
 import logic.*;
+import management.FileManager;
 import network.MulticastChannelWrapper;
 
 
@@ -18,10 +21,11 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
-import static management.FileManager.loadMetadata;
-import static management.FileManager.saveMetadata;
+import static management.FileManager.*;
 import static network.Protocol.startBackup;
+import static network.Protocol.startRestore;
 
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
@@ -30,7 +34,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         System.out.println("Initiating Peer");
         //ex: java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
         //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
-        if(args.length < 9){
+        if(args.length < 9){//TODO - REGEX TO VERIFY INPUT
             System.out.println('\n' + "-------- Peer ------" + '\n');
             System.out.println("Usage: java TestApp <protocol_version> <server_id> <service_acess_point> <MC_IP> <MC_Port> <MDB_IP> <MDB_Port> <MDR_IP> <MDR_Port>");
             System.out.println("<protocol_version> - ???");
@@ -68,8 +72,20 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
 
-        //debug------------
 
+        //debug------------
+        /*
+        ArrayList chunks = new ArrayList();
+        for (int i= 0 ; i< 1; i++)
+            chunks.add(new Chunk("6ace472ac66768552c844bbc74fea693eaad41d3a9c5f67d25be985c16cd176d",i,loadChunk(new ChunkID("6ace472ac66768552c844bbc74fea693eaad41d3a9c5f67d25be985c16cd176d",i))));
+
+        try {
+        restoreFile(chunks,"restoreTest");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /**/
         //----------------------
 
         BackupService service = new BackupService();
@@ -116,27 +132,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
-    /*
-        System.out.println(req.toString());
-        //send messages to all the other peers based on the request
 
-
-        //message debug
-
-        Message nMsg = new Message(MessageType.PUTCHUNK,Utils.version,Utils.senderID,"hash_Sha256",1,5,"body".getBytes(StandardCharsets.US_ASCII));
-        System.out.println(nMsg.toString() + " \n \n \n");
-        Message m= new Message(nMsg.getMessage());
-        System.out.println("-----------------------------");
-        System.out.println(m.toString() + " \n \n \n");
-
-
-        try {
-            nMsg.send(Utils.mc);
-            nMsg.send(Utils.mdb);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    */
         switch (req.getOperation()){
             case BACKUP:
                 try {
@@ -147,7 +143,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 break;
             case DELETE:
                 File f = new File(req.getOpnd1());
-                String fileId = Utils.sha256(f.getName(),f.lastModified(),Utils.peerID);
+                String fileId = Utils.sha256(f);
                 Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
                 msg.send(Utils.mc);
                 break;
@@ -155,10 +151,9 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
                 break;
             case RESTORE:
-                //add
+                startRestore(req.getOpnd1());
                 break;
         }
-
 
 
 

@@ -34,7 +34,7 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
         //ex: java TestApp myServer BACKUP teste.txt 3
         //ex: java TestApp myServer RESTORE teste.txt
 
-        if(args.length < 3){
+        if(args.length < 3){//TODO - REGEX TO VERIFY INPUT
             System.out.println('\n' + "-------- TestApp ------" + '\n');
             System.out.println("Usage: java TestApp <peer_name> <operation> <opnd_1> <opnd_2>");
             System.out.println("<peer_name> - peer access point (string where the server object was binded)");

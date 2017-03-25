@@ -13,10 +13,7 @@ import java.net.MulticastSocket;
 import java.util.*;
 
 import static logic.ChunkManager.manageChunkMessage;
-import static management.FileManager.deleteFileChunks;
-import static management.FileManager.hasFileChunks;
-import static management.FileManager.saveChunk;
-import static management.FileManager.hasChunk;
+import static management.FileManager.*;
 
 
 public class MulticastChannelWrapper implements Runnable{
@@ -125,10 +122,13 @@ public class MulticastChannelWrapper implements Runnable{
             case GETCHUNK:
 
                 if(hasChunk(chunkId)){
-                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
+                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),loadChunk(chunkId));
+                    Observer obs = new Observer(Utils.mdr);
                     Utils.sleepRandomTime(400);
-                    //verificar, se neste ponto já tiver sido recebida uma chunk message não enviar!
-                    response.send(Utils.mc);
+                    obs.stop();
+
+                    if(!obs.existsType(MessageType.CHUNK))
+                        response.send(Utils.mdr);
                 }
 
                 break;
@@ -147,18 +147,21 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case REMOVED:
 
-                //if(hasChunk) update chunk metadata
-                //if(delete < chunknumber) initiate putchunk
                 if(hasChunk(chunkId) && !peerIsTheSender) {//it's the peer id
                     Utils.metadata.updateReplicationDegree(chunkId.toString(),-1);
-                    //if(replication degree < desired)
+                    //if(replication degree < desired) initiate putchunk
+                        Observer obs = new Observer(Utils.mdb);
+                        Utils.sleepRandomTime(400);
+                        obs.stop();
+
+                        //if(!obs.existsType(MessageType.PUTCHUNK))
+                            //sendmessage;
                 }
 
                 break;
             case STORED:
-
                 //update metadata
-                if(hasChunk(chunkId)) {//it's the peer id
+                if(hasChunk(chunkId)) {
                         Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
                 }
 

@@ -3,6 +3,7 @@ package logic;
 
 import network.MulticastChannelWrapper;
 
+import java.io.File;
 import java.net.DatagramSocket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,11 +23,9 @@ public class Utils {
 
 
     // the fileId should include encrypted the fileName, modified date and owner(Peer Id)
-    public static String sha256(String fileName, long date, Integer idOwner){
+    public static String sha256(File f){
 
-
-
-        String text = new StringBuilder().append(fileName).append(date).append(idOwner).toString();
+        String text = new StringBuilder().append(f.getName()).append(f.lastModified()).append(Utils.peerID).toString();
 
         MessageDigest mDigest = null;
 
