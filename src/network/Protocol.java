@@ -75,7 +75,7 @@ public class Protocol {
 
             for (int j = 0 ; j < MAX_GETCHUNK_TRIES; j++) {//maximum of 5 tries
 
-                msg.send(Utils.mdb);
+                msg.send(Utils.mc);
                 sleepSpecificTime(400);
 
 
@@ -99,7 +99,7 @@ public class Protocol {
         System.out.println("size-> " + chunks.size());
 
         try {
-            restoreFile(chunks,"testeRESTORE.jpg");
+            restoreFile(chunks,"testeRESTORE");
         } catch (IOException e) {
             e.printStackTrace();
         }
