@@ -10,6 +10,7 @@ import network.MulticastChannelWrapper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class Message {
 
@@ -74,11 +75,27 @@ public class Message {
         this.messageHeader = messageFields[HEADER].toString().getBytes(StandardCharsets.US_ASCII);
 
         //parse body
-        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK)
-         this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
+        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
+            int bodyPos = findBodyPos(msg);
+            this.messageBody = Arrays.copyOfRange(msg,bodyPos,msg.length);
+
+            //this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
+        }
+
 
     }
 
+    private int findBodyPos(byte[] msg){
+       int pos=0;
+
+       for (int i=0; i < msg.length-4 ;i++)
+           if(msg[i] == 13 && msg[i+1] == 10 && msg[i+2] == 13 && msg[i+3] == 10) {
+                pos= i+4;
+                break;
+           }
+
+       return pos;
+    }
 
 
     //receives a message type and creates it
@@ -114,12 +131,20 @@ public class Message {
 
         this.messageHeader = sb.toString().getBytes(StandardCharsets.US_ASCII);
 
+
         //body
-        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK)
-            sb.append(new String(msgBody,StandardCharsets.US_ASCII));
+        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
+            this.message = new byte[this.messageHeader.length + this.messageBody.length];
+            System.arraycopy(this.messageHeader, 0, this.message, 0, this.messageHeader.length);
+            System.arraycopy(this.messageBody, 0, this.message, this.messageHeader.length, this.messageBody.length);
+            //sb.append(new String(msgBody, StandardCharsets.US_ASCII));
+        }else
+            this.message = this.messageHeader;
 
 
-        this.message = sb.toString().getBytes(StandardCharsets.US_ASCII);
+
+        //this.message = sb.toString().getBytes(StandardCharsets.US_ASCII);
+
     }
 
 

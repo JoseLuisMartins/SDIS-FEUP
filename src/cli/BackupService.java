@@ -22,6 +22,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static management.FileManager.*;
 import static network.Protocol.startBackup;
@@ -74,16 +75,16 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
         //debug------------
-        /*
-        ArrayList chunks = new ArrayList();
-        for (int i= 0 ; i< 1; i++)
-            chunks.add(new Chunk("6ace472ac66768552c844bbc74fea693eaad41d3a9c5f67d25be985c16cd176d",i,loadChunk(new ChunkID("6ace472ac66768552c844bbc74fea693eaad41d3a9c5f67d25be985c16cd176d",i))));
+/*
+        SplitFile sf = new SplitFile(new File("image.jpg"));
+        ArrayList<Chunk> chunks = sf.getChunksList();
 
-        try {
-        restoreFile(chunks,"restoreTest");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println(Arrays.toString(chunks.get(0).getContent()));
+
+        Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, "dsa",0, 2, chunks.get(0).getContent());
+        Message m = new Message(msg.getMessage());
+
+        System.out.println(Arrays.toString(m.getMessageBody()));
 
         /**/
         //----------------------
