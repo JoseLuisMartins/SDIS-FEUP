@@ -78,8 +78,6 @@ public class Message {
         if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
             int bodyPos = findBodyPos(msg);
             this.messageBody = Arrays.copyOfRange(msg,bodyPos,msg.length);
-
-            //this.messageBody = messageFields[BODY].toString().getBytes(StandardCharsets.US_ASCII);
         }
 
 
@@ -132,18 +130,14 @@ public class Message {
         this.messageHeader = sb.toString().getBytes(StandardCharsets.US_ASCII);
 
 
-        //body
+        //body TODO refractor
         if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
             this.message = new byte[this.messageHeader.length + this.messageBody.length];
             System.arraycopy(this.messageHeader, 0, this.message, 0, this.messageHeader.length);
             System.arraycopy(this.messageBody, 0, this.message, this.messageHeader.length, this.messageBody.length);
-            //sb.append(new String(msgBody, StandardCharsets.US_ASCII));
         }else
             this.message = this.messageHeader;
 
-
-
-        //this.message = sb.toString().getBytes(StandardCharsets.US_ASCII);
 
     }
 
