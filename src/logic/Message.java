@@ -130,7 +130,7 @@ public class Message {
         this.messageHeader = sb.toString().getBytes(StandardCharsets.US_ASCII);
 
 
-        //body TODO refractor
+        //body
         if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
             this.message = new byte[this.messageHeader.length + this.messageBody.length];
             System.arraycopy(this.messageHeader, 0, this.message, 0, this.messageHeader.length);

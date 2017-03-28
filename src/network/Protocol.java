@@ -4,7 +4,6 @@ package network;
 import file.Chunk;
 import file.ChunkID;
 import file.SplitFile;
-import logic.ChunkManager;
 import logic.Message;
 import logic.MessageType;
 import logic.Utils;
@@ -13,9 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static logic.Utils.sleepRandomTime;
+
 import static logic.Utils.sleepSpecificTime;
-import static management.FileManager.loadChunk;
 import static management.FileManager.restoreFile;
 
 public class Protocol {
@@ -66,7 +64,7 @@ public class Protocol {
         int currChunk=0;
         ArrayList<Chunk> chunks=new ArrayList<>();
 
-        ChunkManager.validFileIds.add(fileId);
+
 
         while (true){
             Message msg = new Message(MessageType.GETCHUNK, Utils.version, Utils.peerID, fileId, currChunk);
@@ -78,20 +76,20 @@ public class Protocol {
                 msg.send(Utils.mc);
                 sleepSpecificTime(400);
 
-
-                if(obs.getMessageNumber(MessageType.CHUNK,fileId,currChunk) > 0) // already received the chunk
+                Message chunkMsg = obs.getMessage(MessageType.CHUNK,fileId,currChunk);
+                if(chunkMsg != null) { // already received the chunk
+                    chunks.add(new Chunk(fileId,currChunk,chunkMsg.getMessageBody()));
                     break;
+                }
 
                 if(j==MAX_GETCHUNK_TRIES-1)
                     return;
             }
 
-                System.out.println("t");
+
 
             obs.stop();
 
-            //TODO REFRACTOR
-            chunks.add(new Chunk(fileId,currChunk,loadChunk(new ChunkID(fileId,currChunk))));
 
             if(chunks.get(currChunk).getContent().length < 64000)//it's the last chunk
                 break;
@@ -102,12 +100,12 @@ public class Protocol {
 
 
         try {
-            restoreFile(chunks,"testeRESTORE");
+            restoreFile(chunks,"[RESTORED]" + pathName );
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        ChunkManager.validFileIds.remove(fileId);
+
     }
 
 

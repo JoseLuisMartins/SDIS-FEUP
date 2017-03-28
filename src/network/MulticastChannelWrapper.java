@@ -1,7 +1,5 @@
 package network;
 
-
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import file.Chunk;
 import file.ChunkID;
 import logic.*;
@@ -12,7 +10,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.*;
 
-import static logic.ChunkManager.manageChunkMessage;
 import static management.FileManager.*;
 
 
@@ -22,12 +19,14 @@ public class MulticastChannelWrapper implements Runnable{
     private int port;
     private InetAddress address;
     private ChannelType type;
+    private volatile boolean running; //thread safe variable
     private Vector<Observer> observers;
 
 
     public MulticastChannelWrapper(String address, String port,ChannelType type) throws IOException {
         this.type = type;
         this.observers = new Vector<>();
+        this.running=true;
 
         //join multicast group
         this.port = Integer.parseInt(port);
@@ -38,9 +37,12 @@ public class MulticastChannelWrapper implements Runnable{
 
     }
 
+    public void terminateLoop(){
+        this.running=false;
+    }
 
-    public void close() throws IOException {
-        multicastSocket.leaveGroup(multicastSocket.getInetAddress());
+    public void closeSocket() throws IOException {
+        multicastSocket.leaveGroup(address);
         multicastSocket.close();
     }
 
@@ -59,7 +61,7 @@ public class MulticastChannelWrapper implements Runnable{
     @Override
     public void run() {
 
-        while(true){
+        while(this.running){
             try {
                 //receive message
                 //todo check the length
@@ -67,7 +69,7 @@ public class MulticastChannelWrapper implements Runnable{
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 multicastSocket.receive(receivePacket);
 
-                System.out.println("received-> " + type);
+
                 Message msg = new Message(Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()));
                 handleReceivedMessage(msg);
 
@@ -136,7 +138,7 @@ public class MulticastChannelWrapper implements Runnable{
                 //armazenar só se for meu
                 //verificar se devo armazenar ao mandar os getchunks, guardar em algum lado
                 //mandar para um chunk manager, que decide se guarda o chunk ou não
-                manageChunkMessage(msg);
+               // manageChunkMessage(msg);
 
                 break;
             case DELETE:
@@ -160,7 +162,7 @@ public class MulticastChannelWrapper implements Runnable{
 
                 break;
             case STORED:
-                //update metadata
+                //TODO update metadata -> reset metadata when a putchunk is send?
                 if(hasChunk(chunkId)) {
                         Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
                 }

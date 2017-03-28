@@ -14,6 +14,7 @@ import management.FileManager;
 import network.MulticastChannelWrapper;
 
 
+import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -62,13 +63,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         loadMetadata();
 
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
-        //shutdown thread
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                saveMetadata();
-                System.out.println(Utils.metadata.toString());
-            }
-        }, "Shutdown-thread"));
 
 
 
@@ -105,10 +99,33 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             }
         }
 
+        //shutdown thread
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                if(service != null) {
+                    /*try {//CLose all the sockets
+                       service.terminateMulticastThreads();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }/**/
+                }
+
+                saveMetadata();
+                System.out.println(Utils.metadata.toString());
+
+            }
+        }, "Shutdown-thread"));
+
+
     }
 
 
 
+    private Thread threadMc;
+    private Thread threadMdb;
+    private Thread threadMdr;
 
     protected BackupService() throws RemoteException {
         super();
@@ -116,18 +133,31 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         //start the threads
 
-        Thread threadMc = new Thread(Utils.mc);
+        threadMc = new Thread(Utils.mc);
         threadMc.start();
 
-        Thread threadMdb = new Thread(Utils.mdb);
+        threadMdb = new Thread(Utils.mdb);
         threadMdb.start();
 
-        Thread threadMdr = new Thread(Utils.mdr);
+        threadMdr = new Thread(Utils.mdr);
         threadMdr.start();
-
 
     }
 
+    public void terminateMulticastThreads() throws InterruptedException, IOException {
+        Utils.mdb.terminateLoop();
+        Utils.mdr.terminateLoop();
+        Utils.mc.terminateLoop();
+
+        System.out.println("oi1");
+        threadMdb.join();
+        threadMdr.join();
+        threadMc.join();
+        System.out.println("oi2");
+        Utils.mdb.closeSocket();
+        Utils.mdr.closeSocket();
+        Utils.mc.closeSocket();
+    }
 
 
 

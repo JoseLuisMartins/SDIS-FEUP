@@ -23,7 +23,20 @@ public class Observer {
         receivedMessages.add(msg);
     }
 
-    public int getMessageNumber(MessageType type , String FileId, int chunkNo){
+    public Message getMessage(MessageType type , String FileId, int chunkNo){//for chunk
+        Message res=null;
+
+        for (Message m: receivedMessages) {
+            if(m.getType() == type && FileId.equals(m.getFileId()) && chunkNo == m.getChunkNo()) {
+                res=m;
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    public int getMessageNumber(MessageType type , String FileId, int chunkNo){//for stored
         int res=0;
 
         for (Message m: receivedMessages) {
