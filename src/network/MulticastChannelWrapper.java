@@ -129,17 +129,13 @@ public class MulticastChannelWrapper implements Runnable{
                     Utils.sleepRandomTime(400);
                     obs.stop();
 
-                    if(!obs.existsType(MessageType.CHUNK))
+                    if(obs.getMessage(MessageType.CHUNK,msg.getFileId(),msg.getChunkNo()) == null)//nobody has sent a chunk at the moment
                         response.send(Utils.mdr);
                 }
 
                 break;
             case CHUNK:
-                //armazenar só se for meu
-                //verificar se devo armazenar ao mandar os getchunks, guardar em algum lado
-                //mandar para um chunk manager, que decide se guarda o chunk ou não
-               // manageChunkMessage(msg);
-
+                //it's all handled the protocol
                 break;
             case DELETE:
                 String fileId = msg.getFileId();
@@ -149,20 +145,27 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case REMOVED:
 
-                if(hasChunk(chunkId) && !peerIsTheSender) {//it's the peer id
+                if(hasChunk(chunkId)) {
                     Utils.metadata.updateReplicationDegree(chunkId.toString(),-1);
-                    //if(replication degree < desired) initiate putchunk
+                    Integer[] repDegrees = Utils.metadata.getChunkMetadata(chunkId);
+
+
+                    if(repDegrees[Metadata.DESIRED_REPLICATION_DEGREE] < repDegrees[Metadata.CURRENT_REPLICATION_DEGREE]) { //initiate putchunk
                         Observer obs = new Observer(Utils.mdb);
                         Utils.sleepRandomTime(400);
                         obs.stop();
 
-                        //if(!obs.existsType(MessageType.PUTCHUNK))
-                            //sendmessage;
+                        if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
+                            //TODO start thread for the putchunk
+                        }
+
+                    }
+
                 }
 
                 break;
             case STORED:
-                //TODO update metadata -> reset metadata when a putchunk is send?
+                //TODO update metadata -> reset metadata when a putchunk is sent?
                 if(hasChunk(chunkId)) {
                         Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
                 }

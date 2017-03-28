@@ -7,6 +7,7 @@ import file.SplitFile;
 import logic.Message;
 import logic.MessageType;
 import logic.Utils;
+import management.FileManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class Protocol {
 
 
 
-    public static void startBackup(String pathName, int replicationDegree) throws IOException {
+    public static String startBackup(String pathName, int replicationDegree) throws IOException {
         SplitFile sf = new SplitFile(new File(pathName));
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
@@ -55,9 +56,11 @@ public class Protocol {
 
         }
 
+        return "Backup handled sucessfully";
+
     }
 
-    public static void startRestore(String pathName){
+    public static String startRestore(String pathName){
         File f = new File(pathName);
         String fileId = Utils.sha256(f);
 
@@ -83,7 +86,7 @@ public class Protocol {
                 }
 
                 if(j==MAX_GETCHUNK_TRIES-1)
-                    return;
+                    return "Failed to get chunk number " + j + "\n Exceeded number of tries";
             }
 
 
@@ -104,9 +107,42 @@ public class Protocol {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return "Restore handled sucessfully";
     }
 
-    public static void startReclaim(){
+    public static String startDelete(String pathname){
+        File f = new File(pathname);
+        String fileId = Utils.sha256(f);
+        Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
+        msg.send(Utils.mc);
+
+        return "Delete handled sucessfully";
+    }
+
+    public static String startReclaim(int size){
+
+        File fol = new File("out");
+        System.out.println("Arg-> " + size*1000);
+        System.out.println("size-> " + FileManager.getSizeOfFolder(fol));
+
+        //determine space to free
+        //get metadata sorted by replication degree
+        //delete the file
+        //send removed
+        //until space to free is reached
+
+
+
+
+
+
+
+        return "Reclaimed space handled sucessfully";
+    }
+
+    public static String startState(){
+        return "State handled";
     }
 
 

@@ -5,7 +5,9 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
+import file.ChunkID;
 import logic.*;
+import management.FileManager;
 import network.MulticastChannelWrapper;
 import network.Protocol;
 
@@ -61,16 +63,9 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
         //debug------------
-/*
-        SplitFile sf = new SplitFile(new File("image.jpg"));
-        ArrayList<Chunk> chunks = sf.getChunksList();
 
-        System.out.println(Arrays.toString(chunks.get(0).getContent()));
-
-        Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, "dsa",0, 2, chunks.get(0).getContent());
-        Message m = new Message(msg.getMessage());
-
-        System.out.println(Arrays.toString(m.getMessageBody()));
+        /*
+        deleteChunk(new ChunkID("93B271DA59B3C77D199CF52989E2CEBB94BFDBC4F44082573EB9472ACD104CE8",0));
 
         /**/
         //----------------------
@@ -81,7 +76,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
             try {
-
                 Registry reg = LocateRegistry.createRegistry(1099);
                 reg.rebind(accessPoint, service);
                 System.err.println("Peer ready");
@@ -156,33 +150,32 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
 
+        String answer="";
         switch (req.getOperation()){
             case BACKUP:
                 try {
-                    Protocol.startBackup(req.getOpnd1(), req.getReplication());
+                    answer=Protocol.startBackup(req.getOpnd1(), req.getReplication());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case DELETE:
-                File f = new File(req.getOpnd1());
-                String fileId = Utils.sha256(f);
-                Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
-                msg.send(Utils.mc);
+                answer = Protocol.startDelete(req.getOpnd1());
                 break;
             case RECLAIM:
-                Protocol.startReclaim();
+                answer=Protocol.startReclaim(Integer.parseInt(req.getOpnd1()));
                 break;
             case RESTORE:
-                Protocol.startRestore(req.getOpnd1());
+                answer=Protocol.startRestore(req.getOpnd1());
                 break;
             case STATE:
+                answer=Protocol.startState();
                 break;
         }
 
 
 
-        callBack.notify("Request handled sucessfully");
+        callBack.notify(answer);
     }
 
 

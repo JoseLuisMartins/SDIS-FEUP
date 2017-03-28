@@ -51,8 +51,21 @@ public class FileManager {
             currentFile.delete();
         }
 
-        deleteFile(path.toString());
+        folder.delete();//delete the folder
+    }
 
+    public static void deleteChunk(ChunkID chunkId){
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID());
+        File folder = new File(path.toString());
+
+        path.append("/").append(chunkId.getChunkID());
+        File chunkFile = new File(path.toString());
+        chunkFile.delete();
+
+        String[]entries = folder.list();
+
+        if(entries.length == 0)//if it's the only chunk of that file, eliminate the folder as well
+            folder.delete();
     }
 
     public static byte[]  loadChunk(ChunkID chunkId){
@@ -110,18 +123,6 @@ public class FileManager {
 
     }
 
-    // delete a file with the name pass by argument
-    public static void deleteFile(String fileName){
-
-        File file = new File(fileName);
-
-        if(!file.exists()){
-            System.out.println("The file don't exist!");
-            return;
-        }
-
-        file.delete();
-    }
 
     private static void createFolder(String folderName){
 

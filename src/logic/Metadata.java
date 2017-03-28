@@ -2,6 +2,8 @@ package logic;
 
 
 
+import file.ChunkID;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -9,8 +11,8 @@ public class Metadata implements Serializable{
     private HashMap<String, Integer[]> chunksMetadata;
     private int maximumDiskSpace;
     //indexes
-    private static int CURRENT_REPLICATION_DEGREE=0;
-    private static int DESIRED_REPLICATION_DEGREE=1;
+    public static int CURRENT_REPLICATION_DEGREE=0;
+    public static int DESIRED_REPLICATION_DEGREE=1;
 
 
     public Metadata() {
@@ -18,8 +20,8 @@ public class Metadata implements Serializable{
         maximumDiskSpace = 64000;
     }
 
-    public HashMap<String, Integer[]> getChunksMetadata() {
-        return chunksMetadata;
+    public Integer[] getChunkMetadata(ChunkID chunkid) {
+        return chunksMetadata.get(chunkid.toString());
     }
 
     public int getMaximumDiskSpace() {
