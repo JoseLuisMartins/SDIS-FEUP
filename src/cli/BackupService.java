@@ -3,18 +3,13 @@ package cli;
 
 
 import common.CallBackInterface;
-import common.ProtocolType;
 import common.Request;
 import common.ServerInterface;
-import file.Chunk;
-import file.ChunkID;
-import file.SplitFile;
 import logic.*;
-import management.FileManager;
 import network.MulticastChannelWrapper;
+import network.Protocol;
 
 
-import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -22,12 +17,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 
 import static management.FileManager.*;
-import static network.Protocol.startBackup;
-import static network.Protocol.startRestore;
 
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
@@ -167,7 +159,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         switch (req.getOperation()){
             case BACKUP:
                 try {
-                    startBackup(req.getOpnd1(), req.getReplication());
+                    Protocol.startBackup(req.getOpnd1(), req.getReplication());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -179,10 +171,12 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 msg.send(Utils.mc);
                 break;
             case RECLAIM:
-
+                Protocol.startReclaim();
                 break;
             case RESTORE:
-                startRestore(req.getOpnd1());
+                Protocol.startRestore(req.getOpnd1());
+                break;
+            case STATE:
                 break;
         }
 

@@ -8,6 +8,6 @@ public enum ProtocolType {
     RESTORE,
     DELETE,
     RECLAIM,
-    RETRIEVE;
+    STATE;
 
 }
