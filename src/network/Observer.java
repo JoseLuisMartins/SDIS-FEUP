@@ -6,7 +6,7 @@ import logic.Message;
 import logic.MessageType;
 
 import java.util.ArrayList;
-import java.util.Collections;
+
 
 public class Observer {
 
@@ -36,8 +36,13 @@ public class Observer {
 
 
 
-    public boolean existsType(MessageType type){
-        return (Collections.frequency(receivedMessages,type)>0);
+    public boolean existsType(MessageType type) {
+        for (Message m: receivedMessages) {
+            if(m.getType() == type)
+                return true;
+        }
+
+        return false;
     }
 
 

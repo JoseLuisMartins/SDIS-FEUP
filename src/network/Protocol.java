@@ -79,11 +79,14 @@ public class Protocol {
                 sleepSpecificTime(400);
 
 
-                System.out.println("Number-> " +  obs.getMessageNumber(MessageType.CHUNK,fileId,currChunk) + "\nj-> " + j);
-
                 if(obs.getMessageNumber(MessageType.CHUNK,fileId,currChunk) > 0) // already received the chunk
                     break;
+
+                if(j==MAX_GETCHUNK_TRIES-1)
+                    return;
             }
+
+                System.out.println("t");
 
             obs.stop();
 
@@ -96,7 +99,7 @@ public class Protocol {
             currChunk++;
         }
 
-        System.out.println("size-> " + chunks.size());
+
 
         try {
             restoreFile(chunks,"testeRESTORE");
@@ -105,7 +108,6 @@ public class Protocol {
         }
 
         ChunkManager.validFileIds.remove(fileId);
-
     }
 
 

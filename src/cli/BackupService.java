@@ -34,8 +34,8 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
     public static void main(String args[]) throws IOException {
         System.out.println("Initiating Peer");
         //ex: java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
-        //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
         if(args.length < 9){//TODO - REGEX TO VERIFY INPUT
+        //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
             System.out.println('\n' + "-------- Peer ------" + '\n');
             System.out.println("Usage: java TestApp <protocol_version> <server_id> <service_acess_point> <MC_IP> <MC_Port> <MDB_IP> <MDB_Port> <MDR_IP> <MDR_Port>");
             System.out.println("<protocol_version> - ???");
