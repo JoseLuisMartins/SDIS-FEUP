@@ -3,16 +3,11 @@ package cli;
 
 
 import common.CallBackInterface;
-import common.ProtocolType;
 import common.Request;
 import common.ServerInterface;
-import file.FileInfo;
-import file.SplitFile;
 import logic.*;
 import network.MulticastChannelWrapper;
 
-
-import javax.swing.text.html.HTMLDocument;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -20,9 +15,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
 
 import static logic.Utils.CHUNKS_FOLDER_NAME;
 import static management.FileManager.getSizeOfFolder;
@@ -37,10 +29,12 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         System.out.println("Initiating Peer");
         //ex: java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
         //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
-        if(args.length < 9){
+
+        //add-Marcelo
+        if(!Utils.validServiceArgs(args)){
             System.out.println('\n' + "-------- Peer ------" + '\n');
             System.out.println("Usage: java TestApp <protocol_version> <server_id> <service_acess_point> <MC_IP> <MC_Port> <MDB_IP> <MDB_Port> <MDR_IP> <MDR_Port>");
-            System.out.println("<protocol_version> - ???");
+            System.out.println("<protocol_version>");
             System.out.println("<server_id> - id");
             System.out.println("<service_acess_point> - string where the server object was binded");
             System.out.println("<MC_IP> - Multicast Control Channel IP");
@@ -51,7 +45,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             System.out.println("<MDR_Port> - Multicast Data Restore Channel Port");
             return;
         }
-
 
         //subscribe multicast channels and parse variables
         Utils.mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
@@ -98,7 +91,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
 
-
     protected BackupService() throws RemoteException {
         super();
 
@@ -116,8 +108,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
 
     }
-
-
 
 
     @Override
@@ -143,86 +133,17 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             case RESTORE:
                 //add
                 break;
+
+            //add-Marcelo
             case STATE:
-                /*
-                  This operation allows to observe the service state. In response to such a request,
-                  the peer shall send to the client the following information:
-                   For each file whose backup it has initiated:
-                    The file pathname
-                    The backup service id of the file
-                    The desired replication degree
-                        For each chunk of the file:
-                        Its id
-                        Its perceived replication degree
 
-                * */
-                System.out.println("-------- SERVICE STATE --------");
-
-                Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
-
-
-                /*  For each File Should print:
-                        -> pathname
-                        -> id
-                        -> replication degree
-                */
-
-                while(itFiles.hasNext()){
-                    Map.Entry pair = (Map.Entry)itFiles.next();
-
-                    FileInfo info = (FileInfo)pair.getValue();
-
-                    System.out.print("Path: ");
-                    System.out.println(info.getPath());
-
-                    System.out.print("ID: ");
-                    System.out.println(pair.getKey());
-
-                    System.out.print("Replication degree: ");
-                    System.out.println(info.getReplication());
-                }
-
-
-                Iterator itChunks = Utils.metadata.getChunksMetadata().entrySet().iterator();
-                /*
-                    For each chunk should print:
-                        - id
-                        - size
-                        - replication degree
-                 */
-
-
-                System.out.println("---- CHUNKS SAVED-----");
-                   while (itChunks.hasNext()){
-                        Map.Entry pair = (Map.Entry)itChunks.next();
-
-                        System.out.print("ID: ");
-                        System.out.println(pair.getKey());
-
-                        System.out.print("Size: ");
-                        System.out.println(pair.getValue());
-
-                        System.out.print("Replication degree: ");
-                        System.out.println(pair.getValue());
-                }
-
-
-                System.out.print("Maximum amount of disk: ");
-                System.out.println(Utils.metadata.getMaximumDiskSpace());
+                Utils.metadata.printInfo();
 
                 break;
 
         }
 
-
-
-
         callBack.notify("Request handled sucessfully");
     }
-
-
-
-
-
 
 }

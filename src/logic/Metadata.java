@@ -6,6 +6,8 @@ import file.FileInfo;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static logic.Utils.CHUNKS_FOLDER_NAME;
 import static management.FileManager.getSizeOfFolder;
@@ -80,5 +82,74 @@ public class Metadata implements Serializable{
                 "chunksMetadata=" + chunksMetadata +
                 ", maximumDiskSpace=" + maximumDiskSpace +
                 '}';
+    }
+
+    public void printInfo(){
+        /*
+           This operation allows to observe the service state. In response to such a request,
+           the peer shall send to the client the following information:
+           For each file whose backup it has initiated:
+             The file pathname
+             The backup service id of the file
+             The desired replication degree
+             For each chunk of the file:
+                 Its id
+                 Its perceived replication degree
+
+         */
+        System.out.println("-------- SERVICE STATE --------");
+
+        Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
+
+
+        /*  For each File Should print:
+                -> pathname
+                -> id
+                -> replication degree
+         */
+
+        while(itFiles.hasNext()){
+            Map.Entry pair = (Map.Entry)itFiles.next();
+
+            FileInfo info = (FileInfo)pair.getValue();
+
+            System.out.print("Path: ");
+            System.out.println(info.getPath());
+
+            System.out.print("ID: ");
+            System.out.println(pair.getKey());
+
+            System.out.print("Replication degree: ");
+            System.out.println(info.getReplication());
+        }
+
+
+        Iterator itChunks = Utils.metadata.getChunksMetadata().entrySet().iterator();
+        /*
+            For each chunk should print:
+                - id
+                - size
+                - replication degree
+        */
+
+
+        System.out.println("---- CHUNKS SAVED-----");
+        while (itChunks.hasNext()){
+            Map.Entry pair = (Map.Entry)itChunks.next();
+
+            System.out.print("ID: ");
+            System.out.println(pair.getKey());
+
+            System.out.print("Size: ");
+            System.out.println(pair.getValue());
+
+            System.out.print("Replication degree: ");
+            System.out.println(pair.getValue());
+        }
+
+
+        System.out.print("Maximum amount of disk: ");
+        System.out.println(Utils.metadata.getMaximumDiskSpace());
+
     }
 }
