@@ -24,4 +24,12 @@ public class ChunkState implements Comparable<ChunkState> {
     public int compareTo(ChunkState chunkState) {
         return deletePretencion;
     }
+
+    @Override
+    public String toString() {
+        return "ChunkState{" +
+                "chunkID=" + chunkID +
+                ", deletePretencion=" + deletePretencion +
+                '}';
+    }
 }

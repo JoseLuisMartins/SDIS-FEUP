@@ -187,6 +187,9 @@ public class FileManager {
     public static long getSizeOfFolder(File folder) {
         long length = 0;
 
+        if(!folder.exists())
+            return 0;
+
         File[] files = folder.listFiles();
 
         int count = files.length;

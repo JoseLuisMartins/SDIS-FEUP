@@ -73,10 +73,12 @@ public class Metadata implements Serializable{
             res.add(new ChunkState(chunkID,dif));
         }
 
-        //sort descending order - more diference more need of that chunk
+        //sort descending order - more deference more need of that chunk
 
         Collections.sort(res);
         Collections.reverse(res);
+
+
 
         return res;
     }

@@ -127,9 +127,14 @@ public class Protocol {
         return "Delete handled sucessfully";
     }
 
-    public static String startReclaim(long desiredSize){
+    public static String startReclaim(int desiredSize){
 
         File fol = new File(Utils.CHUNKS_FOLDER_NAME);
+        System.out.println(FileManager.getSizeOfFolder(fol));
+        
+
+
+        Utils.metadata.setMaximumDiskSpace(desiredSize);
 
         if(fol.exists()){//if its storing chunks at the moment
             long occupiedSize = FileManager.getSizeOfFolder(fol);
@@ -139,11 +144,14 @@ public class Protocol {
 
                 ArrayList<ChunkState> sortedList = Utils.metadata.getSortedChunksToEliminate();
 
+
                 for (int i = 0 ; i< sortedList.size(); i++){
                     ChunkID currentChunk = sortedList.get(i).getChunkID();
 
-                    FileManager.deleteChunk(currentChunk);
+
                     spaceToFree -= FileManager.getChunkSize(currentChunk);
+                    FileManager.deleteChunk(currentChunk);
+                    System.out.println("space to free-> " + spaceToFree);
 
                     //send removed msg
                     Message msg = new Message(MessageType.REMOVED, Utils.version, Utils.peerID, currentChunk.getFileID(),currentChunk.getChunkID());
@@ -156,13 +164,7 @@ public class Protocol {
 
             }
         }
-
-
-
-
-
-
-
+        /**/
 
         return "Reclaimed space handled sucessfully";
     }
