@@ -4,7 +4,6 @@ package logic;
 //<MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
 //body
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import network.MulticastChannelWrapper;
 
 import java.io.IOException;
