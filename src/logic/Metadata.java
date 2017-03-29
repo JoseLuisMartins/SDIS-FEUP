@@ -6,22 +6,27 @@ import file.ChunkID;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Metadata implements Serializable{
-    private HashMap<String, Integer[]> chunksMetadata;
+    private HashMap<String, HashSet<Integer>> storedChunksPerceivedDegree;
+    private HashMap<String, Integer> storedChunksDesiredDegree;
     private int maximumDiskSpace;
-    //indexes
-    public static int CURRENT_REPLICATION_DEGREE=0;
-    public static int DESIRED_REPLICATION_DEGREE=1;
 
 
     public Metadata() {
-        chunksMetadata = new HashMap<>();
+        storedChunksPerceivedDegree = new HashMap<>();
+        storedChunksDesiredDegree = new HashMap<>();
+
         maximumDiskSpace = 64000;
     }
 
-    public Integer[] getChunkMetadata(ChunkID chunkid) {
-        return chunksMetadata.get(chunkid.toString());
+    public int getPerceivedDegree(ChunkID chunkid) {
+        return storedChunksPerceivedDegree.get(chunkid.toString()).size();
+    }
+
+    public int getDesiredDegree(ChunkID chunkid) {
+        return storedChunksDesiredDegree.get(chunkid.toString());
     }
 
     public int getMaximumDiskSpace() {
@@ -33,29 +38,38 @@ public class Metadata implements Serializable{
     }
 
     public void addChunk(String chunkId,int desiredRepDeg){
-        Integer[] degrees = new Integer[2];
-        degrees[CURRENT_REPLICATION_DEGREE]=0;
-        degrees[DESIRED_REPLICATION_DEGREE]=desiredRepDeg;
-
-        chunksMetadata.put(chunkId,degrees);
+        HashSet<Integer> set = new HashSet<>();
+        set.add(Utils.peerID);//add my id to the metadata
+        storedChunksPerceivedDegree.put(chunkId,set);
+        storedChunksDesiredDegree.put(chunkId,desiredRepDeg);
     }
 
-    public void updateReplicationDegree(String chunkId,int val) {
-        Integer[] currDegree = chunksMetadata.get(chunkId);
-        currDegree[CURRENT_REPLICATION_DEGREE] += val;
-        chunksMetadata.put(chunkId, currDegree);
+    public void updateReplicationDegree(String chunkId,int serverId,boolean add) {
+        HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId);
+        if(add)
+            set.add(serverId);
+        else
+            set.remove(serverId);
+
+        storedChunksPerceivedDegree.put(chunkId, set);
     }
 
 
     @Override
     public String toString() {
-        String res="Metadata\n";
+        String res="-----------------------Metadata-----------------------\n";
 
-        for(HashMap.Entry<String, Integer[]> entry : chunksMetadata.entrySet()) {
+        for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
             String key = entry.getKey();
-            Integer[] val = entry.getValue();
+            HashSet<Integer> perceivedRep = entry.getValue();
 
-            res+= "key-> " + key + " Current_Rep_Deg-> " + val[0] + " Desired_Rep_Deg-> " + val[1] + "\n";
+            res+= "key-> " + key + " Current_Rep_Deg-> " + perceivedRep.size() + " Desired_Rep_Deg-> " + storedChunksDesiredDegree.get(key) + "\n";
+            res+= "Server's hosting the chunk-> ";
+
+            for (Integer id: perceivedRep){
+                res += id + " / ";
+            }
+            res += "\n\n";
         }
 
             res+= "\n  maximumDiskSpace=" + maximumDiskSpace;

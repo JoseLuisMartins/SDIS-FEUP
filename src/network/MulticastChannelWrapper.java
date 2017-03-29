@@ -146,11 +146,11 @@ public class MulticastChannelWrapper implements Runnable{
             case REMOVED:
 
                 if(hasChunk(chunkId)) {
-                    Utils.metadata.updateReplicationDegree(chunkId.toString(),-1);
-                    Integer[] repDegrees = Utils.metadata.getChunkMetadata(chunkId);
+                    Utils.metadata.updateReplicationDegree(chunkId.toString(),msg.getSenderId(),false);
 
 
-                    if(repDegrees[Metadata.DESIRED_REPLICATION_DEGREE] < repDegrees[Metadata.CURRENT_REPLICATION_DEGREE]) { //initiate putchunk
+
+                    if(Utils.metadata.getPerceivedDegree(chunkId) < Utils.metadata.getDesiredDegree(chunkId)) { //initiate putchunk
                         Observer obs = new Observer(Utils.mdb);
                         Utils.sleepRandomTime(400);
                         obs.stop();
@@ -167,13 +167,12 @@ public class MulticastChannelWrapper implements Runnable{
             case STORED:
                 //TODO update metadata -> reset metadata when a putchunk is sent?
                 if(hasChunk(chunkId)) {
-                        Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
+                        Utils.metadata.updateReplicationDegree(chunkId.toString(),msg.getSenderId(),true);
                 }
 
                 break;
         }
     }
-
 
 
 

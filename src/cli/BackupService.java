@@ -5,23 +5,18 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
-import file.ChunkID;
 import logic.*;
 import management.FileManager;
 import network.MulticastChannelWrapper;
 import network.Protocol;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
-
-import static management.FileManager.*;
 
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
@@ -54,7 +49,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
         Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
-        loadMetadata();
+        FileManager.loadMetadata();
 
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
 
@@ -98,7 +93,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                     }/**/
                 }
 
-                saveMetadata();
+                FileManager.saveMetadata();
                 System.out.println(Utils.metadata.toString());
 
             }

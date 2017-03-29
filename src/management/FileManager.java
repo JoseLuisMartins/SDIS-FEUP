@@ -135,12 +135,13 @@ public class FileManager {
 
 
     public static  void saveMetadata(){
+        System.out.println("saved");
         File f =new File("metadata" + Utils.peerID);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fos);
-            os.writeObject(metadata);
+            os.writeObject(Utils.metadata);
             os.close();
             fos.close();
         } catch (Exception e) {
@@ -189,10 +190,6 @@ public class FileManager {
         return length;
     }
     
-
-    public static int getUsedSpace(){
-        return 0;
-    }
 
 
 }

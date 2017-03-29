@@ -45,7 +45,7 @@ public class Protocol {
                 sleepSpecificTime(time_interval);
                 //check responses
                 obs.stop();
-                System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
+                //System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
 
                 if(obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
                     break;
@@ -142,6 +142,9 @@ public class Protocol {
     }
 
     public static String startState(){
+
+
+
         return "State handled";
     }
 
