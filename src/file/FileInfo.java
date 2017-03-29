@@ -1,16 +1,20 @@
 package file;
 
 
+import java.util.ArrayList;
+
 public class FileInfo {
 
     private String fileId;
     private int replication;
     private String path;
+    private ArrayList<Chunk> chunks;
 
-    public FileInfo(String fileId, int replication, String path){
+    public FileInfo(String fileId, int replication, String path, ArrayList<Chunk> chunks){
         this.fileId = fileId;
         this.replication = replication;
         this.path = path;
+        this.chunks = chunks;
     }
 
     public String getFileId() {
@@ -23,6 +27,10 @@ public class FileInfo {
 
     public String getPath() {
         return path;
+    }
+
+    public ArrayList<Chunk> getChunks() {
+        return chunks;
     }
 
     @Override

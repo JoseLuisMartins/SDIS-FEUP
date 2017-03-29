@@ -33,6 +33,10 @@ public class SplitFile {
 
     }
 
+    public String getFileId() {
+        return fileId;
+    }
+
     // loads the data of the file to an array of bytes
     private byte[] loadFile(File file) throws IOException {
 
