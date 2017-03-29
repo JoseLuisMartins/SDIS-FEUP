@@ -5,6 +5,7 @@ import file.ChunkID;
 import logic.*;
 import management.FileManager;
 import protocols.Protocol;
+import protocols.PutChunk;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -162,7 +163,10 @@ public class MulticastChannelWrapper implements Runnable{
                         obs.stop();
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
-                            Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            Thread threadPc = new Thread(pc);
+                            threadPc.start();
+                            //Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
                         }
                     }
                 }
