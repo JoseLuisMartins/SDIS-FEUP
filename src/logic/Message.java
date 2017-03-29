@@ -75,23 +75,12 @@ public class Message {
 
         //parse body
         if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
-            int bodyPos = findBodyPos(msg);
+
+            int bodyPos = messageHeader.length + 4; // 13 ,10,13,10
             this.messageBody = Arrays.copyOfRange(msg,bodyPos,msg.length);
         }
 
 
-    }
-
-    private int findBodyPos(byte[] msg){
-       int pos=0;
-
-       for (int i=0; i < msg.length-4 ;i++)
-           if(msg[i] == 13 && msg[i+1] == 10 && msg[i+2] == 13 && msg[i+3] == 10) {
-                pos= i+4;
-                break;
-           }
-
-       return pos;
     }
 
 

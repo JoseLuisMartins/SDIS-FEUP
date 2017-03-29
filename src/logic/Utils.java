@@ -91,7 +91,7 @@ public class Utils {
                 }else return false;
             }
             else if(args[1].equals(ProtocolType.RECLAIM.toString())) {
-                if (args[2].matches("\\d")) {
+                if (args[2].matches("\\d+")) {
                     return true;
                 } else return false;
             }

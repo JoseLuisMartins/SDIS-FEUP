@@ -25,7 +25,7 @@ public class Metadata implements Serializable{
         storedChunksDesiredDegree = new HashMap<>();
         filesMetadata = new HashMap<>();
 
-        maximumDiskSpace = 64000;
+        maximumDiskSpace = 5000000;
     }
 
     public HashMap<String, HashSet<Integer>> getStoredChunksPerceivedDegree() {
@@ -75,6 +75,11 @@ public class Metadata implements Serializable{
             set.remove(serverId);
 
         storedChunksPerceivedDegree.put(chunkId.toString(), set);
+    }
+
+    public void removeChunk(ChunkID chunkId) {
+        storedChunksPerceivedDegree.remove(chunkId.toString());
+        storedChunksPerceivedDegree.remove(chunkId.toString());
     }
 
     public ArrayList getSortedChunksToEliminate(){

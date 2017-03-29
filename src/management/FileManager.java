@@ -146,7 +146,7 @@ public class FileManager {
 
 
     public static  void saveMetadata(){
-        System.out.println("saved");
+
         File f =new File("metadata" + Utils.peerID);
         FileOutputStream fos = null;
         try {
@@ -184,11 +184,17 @@ public class FileManager {
 
     }
 
+
+    public static long getSizeOfBackupFolder() {
+        File fol = new File(Utils.CHUNKS_FOLDER_NAME);
+        return getSizeOfFolder(fol);
+    }
+
     public static long getSizeOfFolder(File folder) {
         long length = 0;
 
         if(!folder.exists())
-            return 0;
+            return length;
 
         File[] files = folder.listFiles();
 

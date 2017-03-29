@@ -94,7 +94,7 @@ public class Protocol {
                 }
 
                 if(j==MAX_GETCHUNK_TRIES-1)
-                    return "Failed to get chunk number " + j + "\n Exceeded number of tries";
+                    return "Failed to get chunk number " + currChunk + "\n Exceeded number of tries";
             }
 
 
@@ -130,41 +130,40 @@ public class Protocol {
 
     public static String startReclaim(int desiredSize){
 
-        File fol = new File(Utils.CHUNKS_FOLDER_NAME);
-        System.out.println(FileManager.getSizeOfFolder(fol));
-        
-
-
         Utils.metadata.setMaximumDiskSpace(desiredSize);
 
-        if(fol.exists()){//if its storing chunks at the moment
-            long occupiedSize = FileManager.getSizeOfFolder(fol);
-            long spaceToFree = occupiedSize - desiredSize;
 
-            if(spaceToFree > 0){
+        long occupiedSize = FileManager.getSizeOfBackupFolder();
+        long spaceToFree = occupiedSize - desiredSize;
 
-                ArrayList<ChunkState> sortedList = Utils.metadata.getSortedChunksToEliminate();
+        System.out.println("Occupied size-> " + occupiedSize);
 
+        if(spaceToFree > 0){
 
-                for (int i = 0 ; i< sortedList.size(); i++){
-                    ChunkID currentChunk = sortedList.get(i).getChunkID();
+            ArrayList<ChunkState> sortedList = Utils.metadata.getSortedChunksToEliminate();
 
 
-                    spaceToFree -= FileManager.getChunkSize(currentChunk);
-                    FileManager.deleteChunk(currentChunk);
-                    System.out.println("space to free-> " + spaceToFree);
+            for (int i = 0 ; i< sortedList.size(); i++){
+                ChunkID currentChunk = sortedList.get(i).getChunkID();
 
-                    //send removed msg
-                    Message msg = new Message(MessageType.REMOVED, Utils.version, Utils.peerID, currentChunk.getFileID(),currentChunk.getChunkID());
-                    msg.send(Utils.mc);
+                spaceToFree -= FileManager.getChunkSize(currentChunk);
+                FileManager.deleteChunk(currentChunk);
+                System.out.println("space to free-> " + spaceToFree);
 
-                    if (spaceToFree <= 0)//already freed enough space
-                        break;
+                //remove chunk from metadata
+                Utils.metadata.removeChunk(currentChunk);
 
-                }
+                //send removed msg
+                Message msg = new Message(MessageType.REMOVED, Utils.version, Utils.peerID, currentChunk.getFileID(),currentChunk.getChunkID());
+                msg.send(Utils.mc);
+
+                if (spaceToFree <= 0)//already freed enough space
+                    break;
 
             }
+
         }
+
         /**/
 
         return "Reclaimed space handled sucessfully";
