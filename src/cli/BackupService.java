@@ -8,7 +8,7 @@ import common.ServerInterface;
 import logic.*;
 import management.FileManager;
 import network.MulticastChannelWrapper;
-import network.Protocol;
+import protocols.Protocol;
 
 
 import java.io.IOException;

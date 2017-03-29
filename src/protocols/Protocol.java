@@ -1,4 +1,4 @@
-package network;
+package protocols;
 
 
 import file.Chunk;
@@ -10,11 +10,13 @@ import logic.Message;
 import logic.MessageType;
 import logic.Utils;
 import management.FileManager;
+import network.*;
 
 import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.Observer;
 
 
 import static logic.Utils.sleepSpecificTime;
@@ -50,7 +52,7 @@ public class Protocol {
 
             Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, currentChunk.getContent());
 
-            Observer obs = new Observer(Utils.mc);
+            network.Observer obs = new network.Observer(Utils.mc);
             msg.send(Utils.mdb);
 
             //wait 1 sec
@@ -79,7 +81,7 @@ public class Protocol {
         while (true){
             Message msg = new Message(MessageType.GETCHUNK, Utils.version, Utils.peerID, fileId, currChunk);
 
-            Observer obs = new Observer(Utils.mdr);
+            network.Observer obs = new network.Observer(Utils.mdr);
 
             for (int j = 0 ; j < MAX_GETCHUNK_TRIES; j++) {//maximum of 5 tries
 

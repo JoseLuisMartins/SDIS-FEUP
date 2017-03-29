@@ -4,6 +4,7 @@ import file.Chunk;
 import file.ChunkID;
 import logic.*;
 import management.FileManager;
+import protocols.Protocol;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
