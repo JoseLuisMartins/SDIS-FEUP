@@ -6,9 +6,11 @@ import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
 import logic.*;
+import management.FileManager;
 import network.MulticastChannelWrapper;
+import network.Protocol;
 
-import java.io.File;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.rmi.RemoteException;
@@ -16,25 +18,17 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static logic.Utils.CHUNKS_FOLDER_NAME;
-import static management.FileManager.getSizeOfFolder;
-import static management.FileManager.loadMetadata;
-import static management.FileManager.saveMetadata;
-import static network.Protocol.startBackup;
-
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
     public static void main(String args[]) throws IOException {
         System.out.println("Initiating Peer");
         //ex: java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
+        if(args.length < 9){//TODO - REGEX TO VERIFY INPUT
         //java -jar McastSnooper.jar 224.0.0.1:2222  224.0.0.2:2223 224.0.0.0:2224
-
-        //add-Marcelo
-        if(!Utils.validServiceArgs(args)){
             System.out.println('\n' + "-------- Peer ------" + '\n');
             System.out.println("Usage: java TestApp <protocol_version> <server_id> <service_acess_point> <MC_IP> <MC_Port> <MDB_IP> <MDB_Port> <MDR_IP> <MDR_Port>");
-            System.out.println("<protocol_version>");
+            System.out.println("<protocol_version> - ???");
             System.out.println("<server_id> - id");
             System.out.println("<service_acess_point> - string where the server object was binded");
             System.out.println("<MC_IP> - Multicast Control Channel IP");
@@ -46,6 +40,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             return;
         }
 
+
         //subscribe multicast channels and parse variables
         Utils.mc= new MulticastChannelWrapper(args[3],args[4], ChannelType.CONTROL_CHANNEL);
         Utils.mdb= new MulticastChannelWrapper(args[5],args[6],ChannelType.BACKUP_CHANNEL);
@@ -53,22 +48,21 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.version= args[0];
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
-        CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
-        loadMetadata();
+        Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
+        FileManager.loadMetadata();
 
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
-        //shutdown thread
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                saveMetadata();
-                System.out.println(Utils.metadata.toString());
-            }
-        }, "Shutdown-thread"));
+
+
 
 
 
         //debug------------
 
+        /*
+        deleteChunk(new ChunkID("93B271DA59B3C77D199CF52989E2CEBB94BFDBC4F44082573EB9472ACD104CE8",0));
+
+        /**/
         //----------------------
 
         BackupService service = new BackupService();
@@ -77,7 +71,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
             try {
-
                 Registry reg = LocateRegistry.createRegistry(1099);
                 reg.rebind(accessPoint, service);
                 System.err.println("Peer ready");
@@ -87,9 +80,33 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
             }
         }
 
+        //shutdown thread
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                if(service != null) {
+                    /*try {//CLose all the sockets
+                       service.terminateMulticastThreads();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }/**/
+                }
+
+                FileManager.saveMetadata();
+                System.out.println(Utils.metadata.toString());
+
+            }
+        }, "Shutdown-thread"));
+
+
     }
 
 
+
+    private Thread threadMc;
+    private Thread threadMdb;
+    private Thread threadMdr;
 
     protected BackupService() throws RemoteException {
         super();
@@ -97,53 +114,68 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         //start the threads
 
-        Thread threadMc = new Thread(Utils.mc);
+        threadMc = new Thread(Utils.mc);
         threadMc.start();
 
-        Thread threadMdb = new Thread(Utils.mdb);
+        threadMdb = new Thread(Utils.mdb);
         threadMdb.start();
 
-        Thread threadMdr = new Thread(Utils.mdr);
+        threadMdr = new Thread(Utils.mdr);
         threadMdr.start();
 
-
     }
+
+    public void terminateMulticastThreads() throws InterruptedException, IOException {
+        Utils.mdb.terminateLoop();
+        Utils.mdr.terminateLoop();
+        Utils.mc.terminateLoop();
+
+        System.out.println("oi1");
+        threadMdb.join();
+        threadMdr.join();
+        threadMc.join();
+        System.out.println("oi2");
+        Utils.mdb.closeSocket();
+        Utils.mdr.closeSocket();
+        Utils.mc.closeSocket();
+    }
+
 
 
     @Override
     public void makeRequest(Request req, CallBackInterface callBack) throws RemoteException {
 
+        String answer="";
         switch (req.getOperation()){
             case BACKUP:
                 try {
-                    startBackup(req.getOpnd1(), req.getReplication());
+                    answer=Protocol.startBackup(req.getOpnd1(), req.getReplication());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case DELETE:
-                File f = new File(req.getOpnd1());
-                String fileId = Utils.sha256(f.getName(),f.lastModified(),Utils.peerID);
-                Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
-                msg.send(Utils.mc);
+                answer = Protocol.startDelete(req.getOpnd1());
                 break;
             case RECLAIM:
-
+                answer=Protocol.startReclaim(Integer.parseInt(req.getOpnd1())*1000);
                 break;
             case RESTORE:
-                //add
+                answer=Protocol.startRestore(req.getOpnd1());
                 break;
-
-            //add-Marcelo
             case STATE:
-
-                Utils.metadata.printInfo();
-
+                answer=Protocol.startState();
                 break;
-
         }
 
-        callBack.notify("Request handled sucessfully");
+
+
+        callBack.notify(answer);
     }
+
+
+
+
+
 
 }

@@ -1,10 +1,9 @@
 package network;
 
-
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import file.Chunk;
 import file.ChunkID;
 import logic.*;
+import management.FileManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,11 +11,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.*;
 
-import static logic.ChunkManager.manageChunkMessage;
-import static management.FileManager.deleteFileChunks;
-import static management.FileManager.hasFileChunks;
-import static management.FileManager.saveChunk;
-import static management.FileManager.hasChunk;
+import static management.FileManager.*;
 
 
 public class MulticastChannelWrapper implements Runnable{
@@ -25,12 +20,14 @@ public class MulticastChannelWrapper implements Runnable{
     private int port;
     private InetAddress address;
     private ChannelType type;
+    private volatile boolean running; //thread safe variable
     private Vector<Observer> observers;
 
 
     public MulticastChannelWrapper(String address, String port,ChannelType type) throws IOException {
         this.type = type;
         this.observers = new Vector<>();
+        this.running=true;
 
         //join multicast group
         this.port = Integer.parseInt(port);
@@ -41,9 +38,12 @@ public class MulticastChannelWrapper implements Runnable{
 
     }
 
+    public void terminateLoop(){
+        this.running=false;
+    }
 
-    public void close() throws IOException {
-        multicastSocket.leaveGroup(multicastSocket.getInetAddress());
+    public void closeSocket() throws IOException {
+        multicastSocket.leaveGroup(address);
         multicastSocket.close();
     }
 
@@ -62,7 +62,7 @@ public class MulticastChannelWrapper implements Runnable{
     @Override
     public void run() {
 
-        while(true){
+        while(this.running){
             try {
                 //receive message
                 //todo check the length
@@ -70,7 +70,7 @@ public class MulticastChannelWrapper implements Runnable{
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 multicastSocket.receive(receivePacket);
 
-                System.out.println("received-> " + type);
+
                 Message msg = new Message(Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()));
                 handleReceivedMessage(msg);
 
@@ -109,10 +109,11 @@ public class MulticastChannelWrapper implements Runnable{
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
+                    //TODO verificar o espaço antes de guardar
 
                     if(!hasChunk(chunkId)) {
-                        saveChunk(chunk); //verificar o espaço antes de guardar
-                        Utils.metadata.addChunk(chunkId.toString(),msg.getReplicationDeg(),chunk.getSizeOfData());
+                        saveChunk(chunk);
+                        Utils.metadata.addChunk(chunkId,msg.getReplicationDeg());
                     }
 
                     Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
@@ -125,19 +126,18 @@ public class MulticastChannelWrapper implements Runnable{
             case GETCHUNK:
 
                 if(hasChunk(chunkId)){
-                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
+                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),loadChunk(chunkId));
+                    Observer obs = new Observer(Utils.mdr);
                     Utils.sleepRandomTime(400);
-                    //verificar, se neste ponto já tiver sido recebida uma chunk message não enviar!
-                    response.send(Utils.mc);
+                    obs.stop();
+
+                    if(obs.getMessage(MessageType.CHUNK,msg.getFileId(),msg.getChunkNo()) == null)//nobody has sent a chunk at the moment
+                        response.send(Utils.mdr);
                 }
 
                 break;
             case CHUNK:
-                //armazenar só se for meu
-                //verificar se devo armazenar ao mandar os getchunks, guardar em algum lado
-                //mandar para um chunk manager, que decide se guarda o chunk ou não
-                manageChunkMessage(msg);
-
+                //it's all handled the protocol
                 break;
             case DELETE:
                 String fileId = msg.getFileId();
@@ -147,25 +147,31 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case REMOVED:
 
-                //if(hasChunk) update chunk metadata
-                //if(delete < chunknumber) initiate putchunk
-                if(hasChunk(chunkId) && !peerIsTheSender) {//it's the peer id
-                    Utils.metadata.updateReplicationDegree(chunkId.toString(),-1);
-                    //if(replication degree < desired)
+                if(hasChunk(chunkId)) {
+                    Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),false);
+
+
+
+                    if(Utils.metadata.getPerceivedDegree(chunkId) < Utils.metadata.getDesiredDegree(chunkId)) { //initiate putchunk
+                        Observer obs = new Observer(Utils.mdb);
+                        Utils.sleepRandomTime(400);
+                        obs.stop();
+
+                        if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
+                            Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                        }
+                    }
                 }
 
                 break;
             case STORED:
-
-                //update metadata
-                if(hasChunk(chunkId)) {//it's the peer id
-                        Utils.metadata.updateReplicationDegree(chunkId.toString(),1);
+                if(hasChunk(chunkId)) {
+                        Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),true);
                 }
 
                 break;
         }
     }
-
 
 
 

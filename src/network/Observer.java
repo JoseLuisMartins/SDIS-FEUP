@@ -6,7 +6,7 @@ import logic.Message;
 import logic.MessageType;
 
 import java.util.ArrayList;
-import java.util.Collections;
+
 
 public class Observer {
 
@@ -23,7 +23,20 @@ public class Observer {
         receivedMessages.add(msg);
     }
 
-    public int getPutChunkNumber(MessageType type , String FileId, int chunkNo){
+    public Message getMessage(MessageType type , String FileId, int chunkNo){//for chunk
+        Message res=null;
+
+        for (Message m: receivedMessages) {
+            if(m.getType() == type && FileId.equals(m.getFileId()) && chunkNo == m.getChunkNo()) {
+                res=m;
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    public int getMessageNumber(MessageType type , String FileId, int chunkNo){//for stored
         int res=0;
 
         for (Message m: receivedMessages) {
@@ -34,9 +47,17 @@ public class Observer {
         return res;
     }
 
-    public int getTypeNumber(MessageType type){
-        return Collections.frequency(receivedMessages,type);
+
+
+    public boolean existsType(MessageType type) {
+        for (Message m: receivedMessages) {
+            if(m.getType() == type)
+                return true;
+        }
+
+        return false;
     }
+
 
     public void stop(){
         channelToObserve.removeObserver(this);

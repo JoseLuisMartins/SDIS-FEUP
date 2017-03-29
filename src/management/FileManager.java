@@ -4,6 +4,7 @@ import file.Chunk;
 import file.ChunkID;
 import logic.Metadata;
 import logic.Utils;
+import sun.misc.IOUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -50,7 +51,54 @@ public class FileManager {
             currentFile.delete();
         }
 
-        deleteFile(path.toString());
+        folder.delete();//delete the folder
+    }
+
+    public static void deleteChunk(ChunkID chunkId){
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID());
+        File folder = new File(path.toString());
+
+        path.append("/").append(chunkId.getChunkID());
+        File chunkFile = new File(path.toString());
+        chunkFile.delete();
+
+        String[]entries = folder.list();
+
+        if(entries.length == 0)//if it's the only chunk of that file, eliminate the folder as well
+            folder.delete();
+    }
+
+
+    public static long getChunkSize(ChunkID chunkId){
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID()).append("/").append(chunkId.getChunkID());
+        File chunk = new File(path.toString());
+
+        if (chunk.exists())
+            return chunk.length();
+
+        return 0;
+    }
+
+    public static byte[]  loadChunk(ChunkID chunkId){
+
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID()).append("/").append(chunkId.getChunkID());
+        File file = new File(path.toString());
+
+
+        byte[] bytesArray = new byte[(int) file.length()];
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(bytesArray); //read file into bytes[]
+            fis.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return bytesArray;
 
     }
 
@@ -86,18 +134,6 @@ public class FileManager {
 
     }
 
-    // delete a file with the name pass by argument
-    public static void deleteFile(String fileName){
-
-        File file = new File(fileName);
-
-        if(!file.exists()){
-            System.out.println("The file don't exist!");
-            return;
-        }
-
-        file.delete();
-    }
 
     private static void createFolder(String folderName){
 
@@ -110,12 +146,13 @@ public class FileManager {
 
 
     public static  void saveMetadata(){
+        System.out.println("saved");
         File f =new File("metadata" + Utils.peerID);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fos);
-            os.writeObject(metadata);
+            os.writeObject(Utils.metadata);
             os.close();
             fos.close();
         } catch (Exception e) {
@@ -150,6 +187,9 @@ public class FileManager {
     public static long getSizeOfFolder(File folder) {
         long length = 0;
 
+        if(!folder.exists())
+            return 0;
+
         File[] files = folder.listFiles();
 
         int count = files.length;
@@ -163,9 +203,7 @@ public class FileManager {
         }
         return length;
     }
-    public static int getUsedSpace(){
-        return 0;
-    }
+    
 
 
 }

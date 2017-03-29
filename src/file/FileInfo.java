@@ -4,26 +4,22 @@ package file;
 public class FileInfo {
 
     private String fileId;
-    private int replication;
-    private String path;
+    private long fileSize;
 
-    public FileInfo(String fileId, int replication, String path){
+    public FileInfo(String fileId, long fileSize){
         this.fileId = fileId;
-        this.replication = replication;
-        this.path = path;
+        this.fileSize = fileSize;
     }
 
     public String getFileId() {
         return fileId;
     }
 
-    public int getReplication() {
-        return replication;
+
+    public long getFileSize() {
+        return fileSize;
     }
 
-    public String getPath() {
-        return path;
-    }
 
     @Override
     public boolean equals(Object obj) {
@@ -35,9 +31,12 @@ public class FileInfo {
 
         FileInfo fileInfo = (FileInfo) obj;
 
-        if(this.fileId != fileInfo.getFileId())
+        if(this.fileSize != fileInfo.getFileSize()) {
             return false;
-
+        }else{
+            if(this.fileId != fileInfo.getFileId())
+                return false;
+        }
 
         return true;
     }
