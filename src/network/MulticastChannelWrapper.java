@@ -3,6 +3,7 @@ package network;
 import file.Chunk;
 import file.ChunkID;
 import logic.*;
+import management.FileManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -108,10 +109,11 @@ public class MulticastChannelWrapper implements Runnable{
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
+                    //TODO verificar o espaço antes de guardar
 
                     if(!hasChunk(chunkId)) {
-                        saveChunk(chunk); //verificar o espaço antes de guardar
-                        Utils.metadata.addChunk(chunkId.toString(),msg.getReplicationDeg());
+                        saveChunk(chunk);
+                        Utils.metadata.addChunk(chunkId,msg.getReplicationDeg());
                     }
 
                     Message response = new Message(MessageType.STORED,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo());
@@ -146,7 +148,7 @@ public class MulticastChannelWrapper implements Runnable{
             case REMOVED:
 
                 if(hasChunk(chunkId)) {
-                    Utils.metadata.updateReplicationDegree(chunkId.toString(),msg.getSenderId(),false);
+                    Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),false);
 
 
 
@@ -156,18 +158,15 @@ public class MulticastChannelWrapper implements Runnable{
                         obs.stop();
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
-                            //TODO start thread for the putchunk
+                            Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
                         }
-
                     }
-
                 }
 
                 break;
             case STORED:
-                //TODO update metadata -> reset metadata when a putchunk is sent?
                 if(hasChunk(chunkId)) {
-                        Utils.metadata.updateReplicationDegree(chunkId.toString(),msg.getSenderId(),true);
+                        Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),true);
                 }
 
                 break;

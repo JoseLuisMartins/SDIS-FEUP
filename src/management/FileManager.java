@@ -68,6 +68,17 @@ public class FileManager {
             folder.delete();
     }
 
+
+    public static long getChunkSize(ChunkID chunkId){
+        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID()).append("/").append(chunkId.getChunkID());
+        File chunk = new File(path.toString());
+
+        if (chunk.exists())
+            return chunk.length();
+
+        return 0;
+    }
+
     public static byte[]  loadChunk(ChunkID chunkId){
 
         StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkId.getFileID()).append("/").append(chunkId.getChunkID());

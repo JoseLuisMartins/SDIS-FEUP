@@ -5,8 +5,11 @@ package logic;
 import file.ChunkID;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+
 
 public class Metadata implements Serializable{
     private HashMap<String, HashSet<Integer>> storedChunksPerceivedDegree;
@@ -37,21 +40,45 @@ public class Metadata implements Serializable{
         this.maximumDiskSpace = maximumDiskSpace;
     }
 
-    public void addChunk(String chunkId,int desiredRepDeg){
+    public void addChunk(ChunkID chunkId,int desiredRepDeg){
         HashSet<Integer> set = new HashSet<>();
         set.add(Utils.peerID);//add my id to the metadata
-        storedChunksPerceivedDegree.put(chunkId,set);
-        storedChunksDesiredDegree.put(chunkId,desiredRepDeg);
+        storedChunksPerceivedDegree.put(chunkId.toString(),set);
+        storedChunksDesiredDegree.put(chunkId.toString(),desiredRepDeg);
     }
 
-    public void updateReplicationDegree(String chunkId,int serverId,boolean add) {
-        HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId);
+    public void updateReplicationDegree(ChunkID chunkId,int serverId,boolean add) {
+        HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId.toString());
         if(add)
             set.add(serverId);
         else
             set.remove(serverId);
 
-        storedChunksPerceivedDegree.put(chunkId, set);
+        storedChunksPerceivedDegree.put(chunkId.toString(), set);
+    }
+
+    public ArrayList getSortedChunksToEliminate(){
+        ArrayList<ChunkState> res = new ArrayList<>();
+
+        for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
+            String key = entry.getKey();
+            int perceivedRep = entry.getValue().size();
+            int desiredRep = storedChunksDesiredDegree.get(key);
+
+            int dif = perceivedRep-desiredRep;
+
+
+            String[] messageFields = key.split("/");
+            ChunkID chunkID = new ChunkID(messageFields[0],Integer.parseInt(messageFields[1]));
+            res.add(new ChunkState(chunkID,dif));
+        }
+
+        //sort descending order - more diference more need of that chunk
+
+        Collections.sort(res);
+        Collections.reverse(res);
+
+        return res;
     }
 
 
