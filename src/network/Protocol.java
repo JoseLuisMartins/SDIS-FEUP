@@ -31,7 +31,6 @@ public class Protocol {
         SplitFile sf = new SplitFile(new File(pathName));
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
-
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
 
@@ -171,7 +170,6 @@ public class Protocol {
 
     public static String startState(){
 
-
         /*
            This operation allows to observe the service state. In response to such a request,
            the peer shall send to the client the following information:
@@ -184,11 +182,11 @@ public class Protocol {
                  Its perceived replication degree
 
          */
-            StringBuilder state = new StringBuilder();
+        StringBuilder state = new StringBuilder();
 
-            state.append("-------- SERVICE STATE --------").append("\n");
+        state.append("-------- SERVICE STATE --------").append("\n");
 
-            Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
+        Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
 
 
             /*  For each File Should print:
@@ -199,22 +197,22 @@ public class Protocol {
 
             state.append("\n").append("-------- FILES SAVED ---------");
 
-            while(itFiles.hasNext()){
-                Map.Entry pair = (Map.Entry)itFiles.next();
+        while(itFiles.hasNext()){
+            Map.Entry pair = (Map.Entry)itFiles.next();
 
-                FileInfo info = (FileInfo)pair.getValue();
+            FileInfo info = (FileInfo)pair.getValue();
 
-                state.append("Path: ");
-                state.append(info.getPath());
+            state.append("Path: ");
+            state.append(info.getPath());
 
-                state.append("   ID: ");
-                state.append(pair.getKey());
+            state.append("   ID: ");
+            state.append(pair.getKey());
 
-                state.append("    Replication degree: ");
-                state.append(info.getReplication());
+            state.append("    Replication degree: ");
+            state.append(info.getReplication());
 
-                state.append("\n");
-            }
+            state.append("\n");
+        }
 
         /*
             For each chunk should print:
@@ -223,10 +221,9 @@ public class Protocol {
                 - replication degree
         */
 
-        System.out.println("---- CHUNKS SAVED-----");
+        state.append("\n------ CHUNKS SAVED-----\n");
 
         for(HashMap.Entry<String, HashSet<Integer>> pair :  Utils.metadata.getStoredChunksPerceivedDegree().entrySet()){
-            HashSet<Integer> perceivedRep = pair.getValue();
 
             state.append("ID: ");
             state.append(pair.getKey());

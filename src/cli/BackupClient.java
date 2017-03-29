@@ -36,7 +36,6 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
         //ex: java TestApp myServer RESTORE teste.txt
 
 
-
         if(!Utils.validClientArgs(args)){
             System.out.println('\n' + "-------- TestApp ------" + '\n');
             System.out.println("Usage: java TestApp <peer_name> <operation> <opnd_1> <opnd_2>");
