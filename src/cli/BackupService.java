@@ -163,7 +163,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 answer=Protocol.startRestore(req.getOpnd1());
                 break;
             case STATE:
-                answer=Protocol.startState();
+                answer = Protocol.startState();
                 break;
         }
 

@@ -41,6 +41,10 @@ public class Request implements Serializable {
                     validRequest = true;
                     opnd1=args[2];//reclaimed space (Kb)
                 }
+            case STATE:
+                if(args.length == 2){
+                    validRequest = true;
+                }
 
                 break;
             default:

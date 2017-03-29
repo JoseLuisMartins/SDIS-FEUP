@@ -3,6 +3,7 @@ package network;
 
 import file.Chunk;
 import file.ChunkID;
+import file.FileInfo;
 import file.SplitFile;
 import logic.ChunkState;
 import logic.Message;
@@ -13,7 +14,7 @@ import management.FileManager;
 import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 
 import static logic.Utils.sleepSpecificTime;
@@ -172,13 +173,76 @@ public class Protocol {
     public static String startState(){
 
 
+        /*
+           This operation allows to observe the service state. In response to such a request,
+           the peer shall send to the client the following information:
+           For each file whose backup it has initiated:
+             The file pathname
+             The backup service id of the file
+             The desired replication degree
+             For each chunk of the file:
+                 Its id
+                 Its perceived replication degree
 
-        return "State handled";
+         */
+            StringBuilder state = new StringBuilder();
+
+            state.append("-------- SERVICE STATE --------").append("\n");
+
+            Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
+
+
+            /*  For each File Should print:
+                    -> pathname
+                    -> id
+                    -> replication degree
+            */
+
+            state.append("\n").append("-------- FILES SAVED ---------");
+
+            while(itFiles.hasNext()){
+                Map.Entry pair = (Map.Entry)itFiles.next();
+
+                FileInfo info = (FileInfo)pair.getValue();
+
+                state.append("Path: ");
+                state.append(info.getPath());
+
+                state.append("   ID: ");
+                state.append(pair.getKey());
+
+                state.append("    Replication degree: ");
+                state.append(info.getReplication());
+
+                state.append("\n");
+            }
+
+        /*
+            For each chunk should print:
+                - id
+                - size
+                - replication degree
+        */
+
+        System.out.println("---- CHUNKS SAVED-----");
+
+        for(HashMap.Entry<String, HashSet<Integer>> pair :  Utils.metadata.getStoredChunksPerceivedDegree().entrySet()){
+            HashSet<Integer> perceivedRep = pair.getValue();
+
+            state.append("ID: ");
+            state.append(pair.getKey());
+/*
+            System.out.print("Size: ");
+            System.out.println(pair.getValue());
+*/
+            state.append("   Replication degree: ");
+            state.append(pair.getValue().size());
+
+            state.append("\n");
+        }
+
+
+        return state.toString();
     }
-
-
-
-
-
 
 }
