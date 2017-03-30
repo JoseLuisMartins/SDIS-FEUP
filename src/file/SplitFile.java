@@ -67,7 +67,12 @@ public class SplitFile {
         if (data.length % x != 0) {
             Chunk ck = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, data.length - data.length % x, data.length));
             chunksList.add(ck);
+        }else{// TODO verify .... when the file has 64kb should put an empty chunk on the end
+            chunkNo++;
+            Chunk ck1 = new Chunk(this.fileId, chunkNo, new byte[0]);
+            chunksList.add(ck1);
         }
+
     }
 
     public ArrayList<Chunk> getChunksList() {

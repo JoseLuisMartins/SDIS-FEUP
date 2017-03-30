@@ -184,7 +184,6 @@ public class FileManager {
 
     }
 
-
     public static long getSizeOfBackupFolder() {
         File fol = new File(Utils.CHUNKS_FOLDER_NAME);
         return getSizeOfFolder(fol);

@@ -76,7 +76,7 @@ public class Utils {
             if(!args[1].equals(ProtocolType.BACKUP.toString())) {
                 return false;
             }
-            else if (!args[2].matches("^[\\w,\\s-]+\\.[A-Za-z]{3}")){
+            else if (!args[2].matches("^[\\w,\\s-]+(\\\\[\\w,\\s-]+)*\\.[A-Za-z]{3}")){
                 return false;
             }
             else if(args[3].matches("\\D")){
@@ -86,7 +86,8 @@ public class Utils {
             return true;
         }else if(args.length == 3) {
             if(args[1].equals(ProtocolType.DELETE.toString()) || args[1].equals(ProtocolType.RESTORE.toString())){
-                if (args[2].matches("^[\\w,\\s-]+\\.[A-Za-z]{3}")){
+                //"^[\\w,\\s-]+\\.[A-Za-z]{3}"
+                if (args[2].matches("^[\\w,\\s-]+(\\\\[\\w,\\s-]+)*\\.[A-Za-z]{3}")){
                     return true;
                 }else return false;
             }
