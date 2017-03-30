@@ -40,11 +40,11 @@ public class Protocol {
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
 
-            //putChunkProtocol(currentChunk,replicationDegree);
+            putChunkProtocol(currentChunk,replicationDegree);
 
-            PutChunk pc = new PutChunk(currentChunk,replicationDegree);
+            /*PutChunk pc = new PutChunk(currentChunk,replicationDegree);
             Thread threadPc = new Thread(pc);
-            threadPc.start();
+            threadPc.start();*/
         }
 
         return "Backup handled sucessfully";
@@ -52,7 +52,7 @@ public class Protocol {
 
 
     public  static void putChunkProtocol(Chunk currentChunk,int replicationDegree){
-        /*int time_interval=1000;
+        int time_interval=1000;
         ChunkID chunkId = currentChunk.getId();
 
         for (int j = 0 ; j < MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
@@ -73,7 +73,7 @@ public class Protocol {
 
             //try again
             time_interval*=2;
-        }*/
+        }/**/
     }
 
     public static String startRestore(String pathName){

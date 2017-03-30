@@ -1,7 +1,9 @@
 package file;
 
 
-public class Chunk{
+import java.io.Serializable;
+
+public class Chunk implements Serializable{
 
     private ChunkID id;
     private byte[] content;

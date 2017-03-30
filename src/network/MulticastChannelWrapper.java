@@ -111,20 +111,21 @@ public class MulticastChannelWrapper implements Runnable{
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
-                    if( (getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) {//check if storing the chunk will not overflow the backup space
-
-                        if (!hasChunk(chunkId)) {
+                    boolean hasChunk=hasChunk(chunkId);
+                    if( ((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
                             saveChunk(chunk);
                             Utils.metadata.addChunk(chunkId, msg.getReplicationDeg());
-                        }
-
-                        Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
-                        Utils.sleepRandomTime(400);
-                        response.send(Utils.mc);
-
+                            hasChunk=true;
                     }else
                         System.out.println("-----------------Exceeded Allowed Backup Space-----------------" +
                                            "\nCan't store chunk(" + chunkId.getChunkID() + ") of the file (" + chunkId.getFileID() + ")");
+
+
+                    if(hasChunk){
+                        Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
+                        Utils.sleepRandomTime(400);
+                        response.send(Utils.mc);
+                    }
                 }
 
                 break;
@@ -162,11 +163,12 @@ public class MulticastChannelWrapper implements Runnable{
                         Utils.sleepRandomTime(400);
                         obs.stop();
 
+
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
-                            PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            /*PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
                             Thread threadPc = new Thread(pc);
-                            threadPc.start();
-                            //Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            threadPc.start();*/
+                            Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
                         }
                     }
                 }

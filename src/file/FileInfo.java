@@ -1,9 +1,10 @@
 package file;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FileInfo {
+public class FileInfo implements Serializable{
 
     private String fileId;
     private int replication;
