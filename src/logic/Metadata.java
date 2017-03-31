@@ -101,8 +101,14 @@ public class Metadata implements Serializable{
         //sort descending order - more deference more need of that chunk
 
         Collections.sort(res);
-        Collections.reverse(res);
+        //Collections.reverse(res);
 
+        String debug = "delete chunk-> ";
+        for(int i=0; i < res.size();i++){
+            debug += res.get(i).toString();
+        }
+
+        System.out.println(debug);
 
 
         return res;

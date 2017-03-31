@@ -111,12 +111,14 @@ public class MulticastChannelWrapper implements Runnable{
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
+                    System.out.println("PUTCHUNK [size of folder]-> " + getSizeOfBackupFolder());
+
                     boolean hasChunk=hasChunk(chunkId);
-                    if( ((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
+                    if(((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
                             saveChunk(chunk);
                             Utils.metadata.addChunk(chunkId, msg.getReplicationDeg());
                             hasChunk=true;
-                    }else
+                    }else if(!hasChunk)
                         System.out.println("-----------------Exceeded Allowed Backup Space-----------------" +
                                            "\nCan't store chunk(" + chunkId.getChunkID() + ") of the file (" + chunkId.getFileID() + ")");
 
