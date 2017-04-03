@@ -10,17 +10,13 @@ import logic.Message;
 import logic.MessageType;
 import logic.Utils;
 import management.FileManager;
-import network.*;
 
-import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.Observer;
 
 
 import static logic.Utils.sleepSpecificTime;
-import static management.FileManager.getSizeOfFolder;
 import static management.FileManager.restoreFile;
 
 public class Protocol {
@@ -34,8 +30,7 @@ public class Protocol {
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
         FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList);
-
-        Utils.metadata.addFile(sf.getFileId(),info);
+        Utils.metadata.addFile(info);
 
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
@@ -184,7 +179,7 @@ public class Protocol {
 
         state.append("-------- SERVICE STATE --------").append("\n");
 
-        Iterator itFiles = Utils.metadata.getFilesMetadata().entrySet().iterator();
+        Iterator itFiles = Utils.metadata.getBackupFilesMetadata().entrySet().iterator();
 
 
             /*  For each File Should print:

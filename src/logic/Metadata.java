@@ -5,7 +5,6 @@ package logic;
 import file.ChunkID;
 import file.FileInfo;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,14 +15,14 @@ import java.util.HashSet;
 public class Metadata implements Serializable{
     private HashMap<String, HashSet<Integer>> storedChunksPerceivedDegree;
     private HashMap<String, Integer> storedChunksDesiredDegree;
-    private HashMap<String, FileInfo> filesMetadata;
+    private HashMap<String, FileInfo> backupFilesMetadata;
     private int maximumDiskSpace;
 
 
     public Metadata() {
         storedChunksPerceivedDegree = new HashMap<>();
         storedChunksDesiredDegree = new HashMap<>();
-        filesMetadata = new HashMap<>();
+        backupFilesMetadata = new HashMap<>();
 
         maximumDiskSpace = 5000000;
     }
@@ -36,16 +35,23 @@ public class Metadata implements Serializable{
         return storedChunksPerceivedDegree.get(chunkid.toString()).size();
     }
 
-    public HashMap<String, FileInfo> getFilesMetadata() {
-        return filesMetadata;
+    public HashMap<String, FileInfo> getBackupFilesMetadata() {
+        return backupFilesMetadata;
     }
 
-    public void addFile(String id, FileInfo info){
-        filesMetadata.put(id,info);
+    public void addFile(FileInfo info){
+        backupFilesMetadata.put(info.getFileId(),info);
+    }
+
+    public boolean isMyFile(String fileId){
+        if (backupFilesMetadata.get(fileId) == null)
+            return false;
+
+        return true;
     }
 
     public void removefile(String id){
-        filesMetadata.remove(id);
+        backupFilesMetadata.remove(id);
     }
 
     public int getDesiredDegree(ChunkID chunkid) {

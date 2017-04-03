@@ -109,7 +109,8 @@ public class MulticastChannelWrapper implements Runnable{
 
         switch (msg.getType()){
             case PUTCHUNK:
-                if(!peerIsTheSender || hasChunk(chunkId)) {
+                if(!Utils.metadata.isMyFile(msg.getFileId())){
+                //if(!peerIsTheSender || hasChunk(chunkId)) {
                     // A peer must never store the chunks of its own files.
                     // but if it already has that chunk it means that the putchunk is sent not from the peer that has the original file,
                     // but from the peer that received a remove and it's trying to restore the chunk desired replication degree so it should send the STORED message
