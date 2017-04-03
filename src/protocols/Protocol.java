@@ -40,22 +40,23 @@ public class Protocol {
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
 
-            putChunkProtocol(currentChunk,replicationDegree);
+           // putChunkProtocol(currentChunk,replicationDegree);
 
-            /*PutChunk pc = new PutChunk(currentChunk,replicationDegree);
+            PutChunk pc = new PutChunk(currentChunk,replicationDegree);
             Thread threadPc = new Thread(pc);
-            threadPc.start();*/
+            threadPc.start();
+
         }
 
         return "Backup handled sucessfully";
     }
 
-
-    public  static void putChunkProtocol(Chunk currentChunk,int replicationDegree){
-        int time_interval=1000;
+/*
+    public  static void putChunkProtocol(Chunk currentChunk,int replicationDegree) {
+        int time_interval = 1000;
         ChunkID chunkId = currentChunk.getId();
 
-        for (int j = 0 ; j < MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
+        for (int j = 0; j < MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
 
             Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, currentChunk.getContent());
 
@@ -66,15 +67,15 @@ public class Protocol {
             sleepSpecificTime(time_interval);
             //check responses
             obs.stop();
-            //System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
+            System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
 
-            if(obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
+            if (obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID()) >= replicationDegree)
                 break;
 
             //try again
-            time_interval*=2;
-        }/**/
-    }
+            time_interval *= 2;
+        }
+    }*/
 
     public static String startRestore(String pathName){
         File f = new File(pathName);

@@ -103,7 +103,7 @@ public class Metadata implements Serializable{
         Collections.sort(res);
         //Collections.reverse(res);
 
-        String debug = "delete chunk-> ";
+        String debug = "delete chunk-> \n";
         for(int i=0; i < res.size();i++){
             debug += res.get(i).toString();
         }

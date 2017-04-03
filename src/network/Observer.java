@@ -38,8 +38,9 @@ public class Observer {
 
     public int getMessageNumber(MessageType type , String FileId, int chunkNo){//for stored
         int res=0;
-
+        System.out.println("---------------------------getMessageNumber----------------------");
         for (Message m: receivedMessages) {
+            System.out.println(m);
             if(m.getType() == type && FileId.equals(m.getFileId()) && chunkNo == m.getChunkNo())
                 res++;
         }

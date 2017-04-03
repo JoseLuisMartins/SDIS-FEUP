@@ -20,7 +20,7 @@ public class PutChunk implements Runnable{
 
     @Override
     public void run() {
-       /* int time_interval=1000;
+        int time_interval=1000;
         ChunkID chunkId = chunk.getId();
 
         for (int j = 0 ; j < Protocol.MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
@@ -41,7 +41,7 @@ public class PutChunk implements Runnable{
 
         //try again
         time_interval*=2;
-        }*/
+        }
 
     }
 }

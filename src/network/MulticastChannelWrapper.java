@@ -74,11 +74,13 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                 Message msg = new Message(Arrays.copyOf(receivePacket.getData(),receivePacket.getLength()));
-                handleReceivedMessage(msg);
 
-                for (Observer obs: observers) {
+                for (Observer obs: observers) {//notify observers's
                     obs.update(msg);
                 }
+
+                handleReceivedMessage(msg);
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -107,7 +109,10 @@ public class MulticastChannelWrapper implements Runnable{
 
         switch (msg.getType()){
             case PUTCHUNK:
-                if(!peerIsTheSender) { // A peer must never store the chunks of its own files.
+                if(!peerIsTheSender || hasChunk(chunkId)) {
+                    // A peer must never store the chunks of its own files.
+                    // but if it already has that chunk it means that the putchunk is sent not from the peer that has the original file,
+                    // but from the peer that received a remove and it's trying to restore the chunk desired replication degree so it should send the STORED message
 
                     Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
@@ -167,11 +172,12 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
-                            /*PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            //Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
                             Thread threadPc = new Thread(pc);
-                            threadPc.start();*/
-                            Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            threadPc.start();
                         }
+                        System.out.println("exiting removed handler");
                     }
                 }
 
