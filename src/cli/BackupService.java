@@ -19,6 +19,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 
+
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
     public static void main(String args[]) throws IOException {
@@ -54,7 +55,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
         FileManager.loadMetadata();
 
-        System.out.println('\n' + "-------- Peer" +  Utils.peerID + "------" + '\n');
+        System.out.println('\n' + "-------- Peer" +  Utils.peerID + " ready ------" + '\n');
 
 
         //debug------------
@@ -69,16 +70,24 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         //bind remote object
         String accessPoint = args[2];
 
-        if(!accessPoint.equals("default")){//when it's not a default peer (initiator peer)
+
+        try {
+
+            Registry reg = LocateRegistry.getRegistry();
+            reg.rebind(accessPoint, service);
+            System.err.println("Object binded with accessPoint-> " + accessPoint);
+
+        } catch (Exception e) {
             try {
                 Registry reg = LocateRegistry.createRegistry(1099);
                 reg.rebind(accessPoint, service);
-                System.err.println("Peer ready");
-            } catch (Exception e) {
-                System.err.println("Peer exception: " + e.toString());
+                System.err.println("Object binded with accessPoint: " + accessPoint);
+            } catch (Exception e2) {
+                System.err.println("Peer exception: \n" + e.toString());
                 e.printStackTrace();
             }
         }
+
 
         //shutdown thread
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
