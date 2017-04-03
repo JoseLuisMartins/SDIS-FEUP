@@ -37,6 +37,8 @@ public class Protocol {
 
            // putChunkProtocol(currentChunk,replicationDegree);
 
+            Utils.sleepSpecificTime(100);// because of io exception, to prevent the network overflow
+
             PutChunk pc = new PutChunk(currentChunk,replicationDegree);
             Thread threadPc = new Thread(pc);
             threadPc.start();
