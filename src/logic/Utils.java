@@ -76,9 +76,7 @@ public class Utils {
             if(!args[1].equals(ProtocolType.BACKUP.toString())) {
                 return false;
             }
-            else if (!args[2].matches("^[\\w,\\s-]+(\\\\[\\w,\\s-]+)*\\.[A-Za-z]{3}")){
-                return false;
-            }
+            //^[\w,\s-]+(\\[\w,\s-]+)*\.[A-Za-z]{2,3}
             else if(args[3].matches("\\D")){
                 return false;
             }
@@ -87,9 +85,6 @@ public class Utils {
         }else if(args.length == 3) {
             if(args[1].equals(ProtocolType.DELETE.toString()) || args[1].equals(ProtocolType.RESTORE.toString())){
                 //"^[\\w,\\s-]+\\.[A-Za-z]{3}"
-                if (args[2].matches("^[\\w,\\s-]+(\\\\[\\w,\\s-]+)*\\.[A-Za-z]{3}")){
-                    return true;
-                }else return false;
             }
             else if(args[1].equals(ProtocolType.RECLAIM.toString())) {
                 if (args[2].matches("\\d+")) {
@@ -118,7 +113,7 @@ public class Utils {
                 return false;
             } else if(!args[1].matches("\\d+")){
                 return false;
-            }else if(!args[2].matches("[a-zA-Z]+")){
+            }else if(!args[2].matches("[a-zA-Z0-9]+")){
                 return false;
             }
 
