@@ -119,7 +119,7 @@ public class Message {
 
 
         //body
-        if(type == MessageType.CHUNK || type == MessageType.PUTCHUNK) {
+        if((type == MessageType.CHUNK && msgBody != null) || type == MessageType.PUTCHUNK) {
             this.message = new byte[this.messageHeader.length + this.messageBody.length];
             System.arraycopy(this.messageHeader, 0, this.message, 0, this.messageHeader.length);
             System.arraycopy(this.messageBody, 0, this.message, this.messageHeader.length, this.messageBody.length);

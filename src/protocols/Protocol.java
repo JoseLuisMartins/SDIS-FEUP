@@ -11,8 +11,11 @@ import logic.MessageType;
 import logic.Utils;
 import management.FileManager;
 
-import java.io.File;
-import java.io.IOException;
+import javax.rmi.CORBA.Util;
+import java.io.*;
+import java.lang.reflect.Array;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.*;
 
 
@@ -32,12 +35,13 @@ public class Protocol {
         FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList);
         Utils.metadata.addFile(info);
 
+
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
 
            // putChunkProtocol(currentChunk,replicationDegree);
 
-            Utils.sleepSpecificTime(100);// because of io exception, to prevent the network overflow
+            Utils.sleepSpecificTime(400);// because of io exception, to prevent the network overflow
 
             PutChunk pc = new PutChunk(currentChunk,replicationDegree);
             Thread threadPc = new Thread(pc);
@@ -74,17 +78,28 @@ public class Protocol {
         }
     }*/
 
-    public static String startRestore(String pathName){
+    public static String startRestore(String pathName,boolean withEnhancement){
         File f = new File(pathName);
         String fileId = Utils.sha256(f);
 
         int currChunk=0;
         ArrayList<Chunk> chunks=new ArrayList<>();
 
+        String version = Utils.version;
 
+        if(withEnhancement)
+            version="2.0";
+
+        ServerSocket welcomeSocket = null;
+        try {
+            welcomeSocket = new ServerSocket(Utils.mdr.getPort());
+            System.out.println("server socket");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         while (true){
-            Message msg = new Message(MessageType.GETCHUNK, Utils.version, Utils.peerID, fileId, currChunk);
+            Message msg = new Message(MessageType.GETCHUNK, version, Utils.peerID, fileId, currChunk);
 
             network.Observer obs = new network.Observer(Utils.mdr);
 
@@ -95,7 +110,32 @@ public class Protocol {
 
                 Message chunkMsg = obs.getMessage(MessageType.CHUNK,fileId,currChunk);
                 if(chunkMsg != null) { // already received the chunk
-                    chunks.add(new Chunk(fileId,currChunk,chunkMsg.getMessageBody()));
+
+                    if(withEnhancement) {
+                        try { //get the chunk via tcp
+
+                            Socket connectionSocket = welcomeSocket.accept();
+                            //receive chunk
+                            InputStream in = connectionSocket.getInputStream();
+                            DataInputStream dis = new DataInputStream(in);
+
+                            int len = dis.readInt();
+                            byte[] chunkData = new byte[len];
+                            if (len > 0) {
+                                dis.readFully(chunkData);
+                            }
+
+                            System.out.println("Received chunk via TCP with size(" + len + ")");
+                            chunks.add(new Chunk(fileId,currChunk,chunkData));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }else {
+                        System.out.println("Received chunk via Multicast with size(" + chunkMsg.getMessageBody().length + ")");
+                        chunks.add(new Chunk(fileId, currChunk, chunkMsg.getMessageBody()));
+                    }
                     break;
                 }
 

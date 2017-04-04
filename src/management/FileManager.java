@@ -112,10 +112,16 @@ public class FileManager {
 
     public static boolean hasChunk(ChunkID chunkID){
 
-        StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkID.getFileID()).append("/").append(chunkID.getChunkID());
+        /*StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkID.getFileID()).append("/").append(chunkID.getChunkID());
         File f = new File(path.toString());
 
-        return f.exists();
+        return f.exists();*/
+
+
+        if(Utils.metadata.getDesiredDegree(chunkID) == null)
+            return false;
+
+        return true;
     }
 
 

@@ -7,10 +7,14 @@ import management.FileManager;
 import protocols.Protocol;
 import protocols.PutChunk;
 
+import javax.rmi.CORBA.Util;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.Socket;
 import java.util.*;
 
 import static management.FileManager.*;
@@ -98,30 +102,37 @@ public class MulticastChannelWrapper implements Runnable{
 
 
     public void handleReceivedMessage(Message msg) {
-        //    public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, int replicationDeg,byte[] msgBody) {
 
-
-        boolean peerIsTheSender=false; //it's the same peer who sent the request
-        if(msg.getSenderId() == Utils.peerID)
-            peerIsTheSender=true;
 
         ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
 
         switch (msg.getType()){
             case PUTCHUNK:
                 if(!Utils.metadata.isMyFile(msg.getFileId())){
-                //if(!peerIsTheSender || hasChunk(chunkId)) {
-                    // A peer must never store the chunks of its own files.
-                    // but if it already has that chunk it means that the putchunk is sent not from the peer that has the original file,
-                    // but from the peer that received a remove and it's trying to restore the chunk desired replication degree so it should send the STORED message
-
-                    Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
 
                     System.out.println("PUTCHUNK [size of folder]-> " + getSizeOfBackupFolder());
 
+
+                    //Enhancement 1 - Ensure the desired Replication Degree
+                    Observer obs= new Observer(Utils.mc);
+                    Utils.sleepRandomTime(400);
+                    obs.stop();
+                    int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
+                    System.out.println("PUTCHUNK PERCEIVED DEGREE-> " + perceivedDegree);
+                    if (perceivedDegree >= msg.getReplicationDeg())
+                        break;
+
+
                     boolean hasChunk=hasChunk(chunkId);
+
                     if(((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
-                            saveChunk(chunk);
+                            Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
+                            //saveChunk(chunk);
+                            //debug--------
+                            Thread t = new Thread(() -> saveChunk(chunk));
+                            t.start();
+                            //--------------
+
                             Utils.metadata.addChunk(chunkId, msg.getReplicationDeg());
                             hasChunk=true;
                     }else if(!hasChunk)
@@ -140,18 +151,54 @@ public class MulticastChannelWrapper implements Runnable{
             case GETCHUNK:
 
                 if(hasChunk(chunkId)){
-                    Message response = new Message(MessageType.CHUNK,Utils.version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),loadChunk(chunkId));
+                    String version = msg.getVersion();
+                    boolean withEnhancement=false;
+
+                    if(!version.equals("1.0"))
+                        withEnhancement=true;
+
+
                     Observer obs = new Observer(Utils.mdr);
                     Utils.sleepRandomTime(400);
                     obs.stop();
 
-                    if(obs.getMessage(MessageType.CHUNK,msg.getFileId(),msg.getChunkNo()) == null)//nobody has sent a chunk at the moment
+                    if(obs.getMessage(MessageType.CHUNK,msg.getFileId(),msg.getChunkNo()) == null) {//nobody has sent a chunk at the moment
+                        Message response=null;
+                        if (withEnhancement) {//send via tcp if enhancement;
+                            try {
+                                response = new Message(MessageType.CHUNK, version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
+                                Socket socket = new Socket("localhost",Utils.mdr.getPort());
+
+
+                                OutputStream out = socket.getOutputStream();
+                                DataOutputStream dos = new DataOutputStream(out);
+
+                                byte[] chunk = loadChunk(chunkId);
+                                dos.writeInt(chunk.length);
+                                if (chunk.length > 0) {
+                                    dos.write(chunk, 0, chunk.length);
+                                }
+
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }else
+                            response = new Message(MessageType.CHUNK,version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),loadChunk(chunkId));
+
+
                         response.send(Utils.mdr);
+
+
+
+                    }
                 }
 
                 break;
             case CHUNK:
-                //it's all handled the protocol
+                //it's all handled by the protocol
                 break;
             case DELETE:
                 String fileId = msg.getFileId();

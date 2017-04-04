@@ -22,6 +22,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
+
     public static void main(String args[]) throws IOException {
         System.out.println("Initiating Peer");
         // java TestApp 1.0 1 myServer  224.0.0.1 2222  224.0.0.2 2223 224.0.0.0 2224
@@ -169,7 +170,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 answer=Protocol.startReclaim(Integer.parseInt(req.getOpnd1())*1000);
                 break;
             case RESTORE:
-                answer=Protocol.startRestore(req.getOpnd1());
+                answer=Protocol.startRestore(req.getOpnd1(),true);
                 break;
             case STATE:
                 answer = Protocol.startState();

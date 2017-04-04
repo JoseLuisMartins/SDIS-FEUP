@@ -50,11 +50,14 @@ public class Metadata implements Serializable{
         return true;
     }
 
+
     public void removefile(String id){
         backupFilesMetadata.remove(id);
     }
 
-    public int getDesiredDegree(ChunkID chunkid) {
+
+
+    public Integer getDesiredDegree(ChunkID chunkid) {
         return storedChunksDesiredDegree.get(chunkid.toString());
     }
 

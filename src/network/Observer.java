@@ -6,16 +6,17 @@ import logic.Message;
 import logic.MessageType;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 
 public class Observer {
 
-    private ArrayList<Message> receivedMessages;
+    private Vector<Message> receivedMessages;
     private MulticastChannelWrapper channelToObserve;
 
     public Observer(MulticastChannelWrapper channelToObserve) {
         this.channelToObserve = channelToObserve;
-        receivedMessages=new ArrayList<>();
+        receivedMessages=new Vector<>();
         channelToObserve.addObserver(this);
     }
 
