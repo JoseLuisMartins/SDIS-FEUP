@@ -4,10 +4,8 @@ import file.Chunk;
 import file.ChunkID;
 import logic.*;
 import management.FileManager;
-import protocols.Protocol;
 import protocols.PutChunk;
 
-import javax.rmi.CORBA.Util;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -83,7 +81,7 @@ public class MulticastChannelWrapper implements Runnable{
                     obs.update(msg);
                 }
 
-                handleReceivedMessage(msg);
+                handleReceivedMessage(msg,receivePacket.getAddress());
 
 
             } catch (IOException e) {
@@ -101,7 +99,7 @@ public class MulticastChannelWrapper implements Runnable{
     }
 
 
-    public void handleReceivedMessage(Message msg) {
+    public void handleReceivedMessage(Message msg,InetAddress senderAddress) {
 
 
         ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -167,7 +165,7 @@ public class MulticastChannelWrapper implements Runnable{
                         if (withEnhancement) {//send via tcp if enhancement;
                             try {
                                 response = new Message(MessageType.CHUNK, version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
-                                Socket socket = new Socket("localhost",Utils.mdr.getPort());
+                                Socket socket = new Socket(senderAddress,Utils.mdr.getPort());
 
 
                                 OutputStream out = socket.getOutputStream();

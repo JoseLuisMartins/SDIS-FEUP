@@ -41,7 +41,7 @@ public class Protocol {
 
            // putChunkProtocol(currentChunk,replicationDegree);
 
-            Utils.sleepSpecificTime(400);// because of io exception, to prevent the network overflow
+            Utils.sleepSpecificTime(1000);// because of io exception, to prevent the network overflow
 
             PutChunk pc = new PutChunk(currentChunk,replicationDegree);
             Thread threadPc = new Thread(pc);
@@ -93,7 +93,6 @@ public class Protocol {
         ServerSocket welcomeSocket = null;
         try {
             welcomeSocket = new ServerSocket(Utils.mdr.getPort());
-            System.out.println("server socket");
         } catch (IOException e) {
             e.printStackTrace();
         }
