@@ -6,6 +6,8 @@ import network.MulticastChannelWrapper;
 
 import java.io.File;
 import java.net.DatagramSocket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -84,7 +86,7 @@ public class Utils {
             return true;
         }else if(args.length == 3) {
             if(args[1].equals(ProtocolType.DELETE.toString()) || args[1].equals(ProtocolType.RESTORE.toString())){
-                //"^[\\w,\\s-]+\\.[A-Za-z]{3}"
+                return true;
             }
             else if(args[1].equals(ProtocolType.RECLAIM.toString())) {
                 if (args[2].matches("\\d+")) {
@@ -143,6 +145,15 @@ public class Utils {
         }
 
         return false;
+    }
+
+
+    public static File getFileFromPath(String pathName){
+
+        Path path = Paths.get(pathName);
+
+        System.out.println(path.toAbsolutePath().toString());
+        return new File(path.toAbsolutePath().toString());
     }
 }
 

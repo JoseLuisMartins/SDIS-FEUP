@@ -4,9 +4,11 @@ package cli;
 import common.CallBackInterface;
 import common.Request;
 import common.ServerInterface;
+import file.SplitFile;
 import logic.Utils;
+import management.FileManager;
 
-import java.io.Serializable;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,6 +16,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -53,7 +56,6 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
 
         Request request = new Request(args);
 
-
         try {
 
 
@@ -73,8 +75,5 @@ public class BackupClient extends UnicastRemoteObject implements CallBackInterfa
             e.printStackTrace();
         }
     }
-
-
-
 
 }

@@ -32,6 +32,7 @@ public class Protocol {
         SplitFile sf = new SplitFile(new File(pathName));
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
+
         FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList);
         Utils.metadata.addFile(info);
 

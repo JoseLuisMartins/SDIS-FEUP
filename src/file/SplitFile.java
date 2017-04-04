@@ -22,6 +22,7 @@ public class SplitFile {
 
 
         split();
+        debug();
     }
 
     private void split() throws IOException {
@@ -78,5 +79,12 @@ public class SplitFile {
 
     public ArrayList<Chunk> getChunksList() {
         return chunksList;
+    }
+
+    private void debug(){
+        System.out.println("SIZE: " + getChunksList().size());
+        System.out.println("File: " + file.getName());
+        System.out.println("Path: " + file.getAbsolutePath());
+        System.out.println("File ID: " + fileId);
     }
 }
