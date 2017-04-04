@@ -108,13 +108,14 @@ public class MulticastChannelWrapper implements Runnable{
             case PUTCHUNK:
                 if(!Utils.metadata.isMyFile(msg.getFileId())){
 
-                    System.out.println("PUTCHUNK [size of folder]-> " + getSizeOfBackupFolder());
+                    System.out.println("PUTCHUNK [size of folder]-> " + getSizeOfBackupFolder() + " fileId-> " + msg.getFileId() + "chunkNo-> " + msg.getChunkNo());
 
 
                     //Enhancement 1 - Ensure the desired Replication Degree
                     Observer obs= new Observer(Utils.mc);
                     Utils.sleepRandomTime(400);
                     obs.stop();
+
                     int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
                     System.out.println("PUTCHUNK PERCEIVED DEGREE-> " + perceivedDegree);
                     if (perceivedDegree >= msg.getReplicationDeg())
@@ -125,10 +126,11 @@ public class MulticastChannelWrapper implements Runnable{
 
                     if(((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
                             Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
-                            //saveChunk(chunk);
-                            //debug--------
-                            Thread t = new Thread(() -> saveChunk(chunk));
-                            t.start();
+                            saveChunk(chunk);
+
+                            //with a thread
+                            //Thread t = new Thread(() -> saveChunk(chunk));
+                            //t.start();
                             //--------------
 
                             Utils.metadata.addChunk(chunkId, msg.getReplicationDeg());
@@ -139,6 +141,7 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                     if(hasChunk){
+
                         Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
                         Utils.sleepRandomTime(400);
                         response.send(Utils.mc);
@@ -162,7 +165,7 @@ public class MulticastChannelWrapper implements Runnable{
 
                     if(obs.getMessage(MessageType.CHUNK,msg.getFileId(),msg.getChunkNo()) == null) {//nobody has sent a chunk at the moment
                         Message response=null;
-                        if (withEnhancement) {//send via tcp if enhancement;
+                        if (withEnhancement) {//Enhancement 2 - Chunks without body
                             try {
                                 response = new Message(MessageType.CHUNK, version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
                                 Socket socket = new Socket(senderAddress,Utils.mdr.getPort());
@@ -200,8 +203,11 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case DELETE:
                 String fileId = msg.getFileId();
-                if(hasFileChunks(fileId))
+                if(hasFileChunks(fileId)) {
                     deleteFileChunks(fileId);
+                    //update metadata
+                    Utils.metadata.removeFileChunks(fileId);
+                }
 
                 break;
             case REMOVED:

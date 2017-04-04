@@ -51,11 +51,30 @@ public class Metadata implements Serializable{
     }
 
 
-    public void removefile(String id){
+    public void removeFile(String id){
         backupFilesMetadata.remove(id);
     }
 
+    public void removeFileChunks(String fileId){
+        ArrayList<String> keysToRemove = new ArrayList<>();
 
+        for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
+            String key = entry.getKey();
+
+            String[] messageFields = key.split("/");
+            String currFileId = messageFields[0];
+
+            if(currFileId.equals(fileId)){
+                keysToRemove.add(key);
+            }
+        }
+
+        for (String key: keysToRemove) {
+            storedChunksPerceivedDegree.remove(key);
+            storedChunksDesiredDegree.remove(key);
+        }
+
+    }
 
     public Integer getDesiredDegree(ChunkID chunkid) {
         return storedChunksDesiredDegree.get(chunkid.toString());
