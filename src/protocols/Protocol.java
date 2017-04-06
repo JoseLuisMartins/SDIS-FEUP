@@ -11,15 +11,15 @@ import logic.MessageType;
 import logic.Utils;
 import management.FileManager;
 
-import javax.rmi.CORBA.Util;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
 
 import static logic.Utils.sleepSpecificTime;
+import static management.FileManager.getChunkSize;
+import static management.FileManager.getSizeOfBackupFolder;
 import static management.FileManager.restoreFile;
 
 public class Protocol {
@@ -33,7 +33,7 @@ public class Protocol {
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
 
-        FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList);
+        FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList.size());
         Utils.metadata.addFile(info);
 
 
@@ -147,6 +147,7 @@ public class Protocol {
         Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
         msg.send(Utils.mc);
 
+        //TODO UPDATE METADATA
         return "Delete handled sucessfully";
     }
 
@@ -195,18 +196,12 @@ public class Protocol {
 
         StringBuilder state = new StringBuilder();
 
-        state.append("-------- SERVICE STATE --------").append("\n");
+        state.append("-------- Peer State --------").append("\n");
 
         Iterator itFiles = Utils.metadata.getBackupFilesMetadata().entrySet().iterator();
 
 
-            /*  For each File Should print:
-                    -> pathname
-                    -> id
-                    -> replication degree
-            */
-
-        state.append("\n").append("-------- FILES SAVED ---------").append("\n");
+        state.append("\n").append("-------- Saved Files ---------").append("\n");
 
         while(itFiles.hasNext()){
             Map.Entry pair = (Map.Entry)itFiles.next();
@@ -216,48 +211,49 @@ public class Protocol {
             state.append("Path: ");
             state.append(info.getPath());
 
-            state.append("   ID: ");
+            state.append("\nID: ");
             state.append(pair.getKey());
 
-            state.append("    Replication degree: ");
-            state.append(info.getReplication());
+            state.append("\nDesired replication degree: ");
+            state.append(info.getDesiredReplication());
 
             state.append("\n");
 
-            state.append("Chunks: ").append("\n");
-            for(int i = 0; i < info.getChunks().size(); i++){
-                state.append("ID: ");
-                state.append(info.getChunks().get(i).getId());
+            state.append("Chunks: ---------").append("\n");
+            for(int i = 0; i < info.getNChunks(); i++){
+                state.append("\n\tID: " + i);
+
 
                 state.append("  Replication: ");
-                //TODO it is necessary to put the percieved replications degree
+                state.append(info.getPerceivedDegree(i));
+
 
                 state.append("\n");
             }
         }
 
-        /*
-            For each chunk should print:
-                - id
-                - size
-                - replication degree
-        */
 
-        state.append("\n-------- CHUNKS SAVED-----\n");
+
+        state.append("\n-------- Chunks Saved-----\n");
 
         for(HashMap.Entry<String, HashSet<Integer>> pair :  Utils.metadata.getStoredChunksPerceivedDegree().entrySet()){
+            ChunkID chunkID = new ChunkID(pair.getKey());
+            state.append("ID: ");
+            state.append(chunkID.getChunkID());
 
-            state.append("     ID: ");
-            state.append(pair.getKey());
-/*
-            System.out.print("Size: ");
-            System.out.println(pair.getValue());
-*/
-            state.append("   Replication degree: ");
+
+            state.append("\nSize(KBytes): ");
+            state.append(getChunkSize(chunkID));
+
+
+            state.append("\nPerceived replication degree: ");
             state.append(pair.getValue().size());
 
             state.append("\n");
         }
+
+        state.append("\n-------- Space Used-----");
+        state.append("\n\n Using " + getSizeOfBackupFolder()/1000 + " of " + Utils.metadata.getMaximumDiskSpace()/1000 + " KBytes.\n");
 
 
         return state.toString();

@@ -120,7 +120,7 @@ public class FileManager {
         return f.exists();*/
 
 
-        if(Utils.metadata.getDesiredDegree(chunkID) == null)
+        if(Utils.metadata.getDesiredDegree(chunkID) == null && !(Utils.metadata.isMyFile(chunkID.getFileID())))//if it's not a chunk that i have stored and it's not a chunk of a file that i have baked up
             return false;
 
         return true;

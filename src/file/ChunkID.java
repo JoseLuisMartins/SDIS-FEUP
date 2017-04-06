@@ -15,6 +15,12 @@ public class ChunkID implements Serializable{
         this.chunkNo = chunkID;
     }
 
+    public ChunkID(String fullChunkId) {
+        String[] messageFields = fullChunkId.split("/");
+        this.fileID = messageFields[0];
+        this.chunkNo = Integer.parseInt(messageFields[1]);
+    }
+
     public int getChunkID() {
         return chunkNo;
     }

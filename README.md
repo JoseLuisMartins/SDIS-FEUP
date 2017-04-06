@@ -47,9 +47,9 @@ The purpose of the service is to backup files by replicating their content in mu
 
 The backup service splits each file in chunks and then backs up each chunk independently, rather than creating multiple files that are a copy of the file to backup. Each chunk is identified by the pair (fileId, chunkNo). The maximum size of each chunks 64KByte (where K stands for 1000). All chunks of a file, except possibly the last one, have the maximum size. The size of the last chunk is always shorter than that size. If the file size is a multiple of the chunk size, the last chunk has size 0. A peer need not store all chunks of a file, or even any chunk of a file. The recovery of each chunk is also performed independently of the recovery of other chunks of a file. That is, to recover a file, the service will have to execute a recovery protocol per chunk as described below.
 
-In order to tolerate the unavailability of peers, the service backs up each chunk with a given degree of replication, i.e. on a given number of peers. The desired replication degree of a chunk depends on the file to which it belongs, and all chunks of a given file have the same desired replication degree. However, at any time instant, the actual replication degree of a chunk may be different from the one that is desired.
+In order to tolerate the unavailability of peers, the service backs up each chunk with a given degree of desiredReplication, i.e. on a given number of peers. The desired desiredReplication degree of a chunk depends on the file to which it belongs, and all chunks of a given file have the same desired desiredReplication degree. However, at any time instant, the actual desiredReplication degree of a chunk may be different from the one that is desired.
 
-In addition to the basic functionality for backing up and recovering a file, the backup service must provide the functionality for reclaiming disk space on peers. First, as a requirement of the service, each peer retains total control on the use of its local disk space. If a server's administrator decides to reduce the amount of local disk space used by the backup service, the latter may have to free disk space used for storing chunks. This will decrease the replication degree of the chunk, which may drop below the desired value. In that case, the service will try to create new copies of the chunk so as to keep the desired replication degree. Second, a file may be deleted. In this case, the backup service should delete all the chunks of that file. Actually, deletion of the chunks of a file, may happen not only when the file is deleted on its file system, but also when it is modified, because, for the backup system, it will be a different file.
+In addition to the basic functionality for backing up and recovering a file, the backup service must provide the functionality for reclaiming disk space on peers. First, as a requirement of the service, each peer retains total control on the use of its local disk space. If a server's administrator decides to reduce the amount of local disk space used by the backup service, the latter may have to free disk space used for storing chunks. This will decrease the desiredReplication degree of the chunk, which may drop below the desired value. In that case, the service will try to create new copies of the chunk so as to keep the desired desiredReplication degree. Second, a file may be deleted. In this case, the backup service should delete all the chunks of that file. Actually, deletion of the chunks of a file, may happen not only when the file is deleted on its file system, but also when it is modified, because, for the backup system, it will be a different file.
 
 As described, except for the initiator peer, the backup service knows only about chunks of the backed up files, which are identified by the fileId. It knows nothing about the file systems where the backed up files are kept. Of course to be of practical use, the mapping between the fileId kept by the backup system and the name of that file (and possibly its file system) needs to survive a failure of the original file system. This problem can be solved in different ways, but you are not required to do it for this project. For this project, and to keep it doable by the submission deadline, we will assume that this mapping is never lost.
 
@@ -115,14 +115,14 @@ This is the file identifier for the backup service. As stated above, it is suppo
 <ChunkNo>
 This field together with the FileId specifies a chunk in the file. The chunk numbers are integers and should be assigned sequentially starting at 0. It is encoded as a sequence of ASCII characters corresponding to the decimal representation of that number, with the most significant digit first. The length of this field is variable, but should not be larger than 6 chars. Therefore, each file can have at most one million chunks. Given that each chunk is 64 KByte, this limits the size of the files to backup to 64 GByte.
 <ReplicationDeg>
-This field contains the desired replication degree of the chunk. This is a digit, thus allowing a replication degree of up to 9. It takes one byte, which is the ASCII code of that digit.
+This field contains the desired desiredReplication degree of the chunk. This is a digit, thus allowing a desiredReplication degree of up to 9. It takes one byte, which is the ASCII code of that digit.
 Body
 
 When present, the body contains the data of a file chunk. The length of the body is variable. As stated above, if it is smaller than the maximum chunk size, 64KByte, it is the last chunk in a file. The protocol does not interpret the contents of the Body. For the protocol its value is just a byte sequence.
 
 3.2 Chunk backup subprotocol
 
-To backup a chunk, the initiator-peer sends to the MDB multicast data channel a message whose body is the contents of that chunk. This message includes also the sender and the chunk ids and the desired replication degree:
+To backup a chunk, the initiator-peer sends to the MDB multicast data channel a message whose body is the contents of that chunk. This message includes also the sender and the chunk ids and the desired desiredReplication degree:
 
 
 PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
@@ -136,13 +136,13 @@ after a random delay uniformly distributed between 0 and 400 ms. Food for though
 
 IMP: A peer must never store the chunks of its own files.
 
-This message is used to ensure that the chunk is backed up with the desired replication degree as follows. The initiator-peer collects the confirmation messages during a time interval of one second. If the number of confirmation messages it received up to the end of that interval is lower than the desired replication degree, it retransmits the backup message on the MDB channel, and doubles the time interval for receiving confirmation messages. This procedure is repeated up to a maximum number of five times, i.e. the initiator will send at most 5 PUTCHUNK messages per chunk.
+This message is used to ensure that the chunk is backed up with the desired desiredReplication degree as follows. The initiator-peer collects the confirmation messages during a time interval of one second. If the number of confirmation messages it received up to the end of that interval is lower than the desired desiredReplication degree, it retransmits the backup message on the MDB channel, and doubles the time interval for receiving confirmation messages. This procedure is repeated up to a maximum number of five times, i.e. the initiator will send at most 5 PUTCHUNK messages per chunk.
 
 Hint: Because UDP is not reliable, a peer that has stored a chunk must reply with a STORED message to every PUTCHUNK message it receives. Therefore, the initiator-peer needs to keep track of which peers have responded.
 
-A peer should also count the number of confirmation messages for each of the chunks it has stored and keep that count in non-volatile memory. This information is used if the peer runs out of disk space: in that event, the peer will try to free some space by evicting chunks whose actual replication degree is higher than the desired replication degree.
+A peer should also count the number of confirmation messages for each of the chunks it has stored and keep that count in non-volatile memory. This information is used if the peer runs out of disk space: in that event, the peer will try to free some space by evicting chunks whose actual desiredReplication degree is higher than the desired desiredReplication degree.
 
-Enhancement: This scheme can deplete the backup space rather rapidly, and cause too much activity on the nodes once that space is full. Can you think of an alternative scheme that ensures the desired replication degree, avoids these problems, and, nevertheless, can interoperate with peers that execute the chunk backup protocol described above?
+Enhancement: This scheme can deplete the backup space rather rapidly, and cause too much activity on the nodes once that space is full. Can you think of an alternative scheme that ensures the desired desiredReplication degree, avoids these problems, and, nevertheless, can interoperate with peers that execute the chunk backup protocol described above?
 
 3.3 Chunk restore protocol
 
@@ -182,9 +182,9 @@ The algorithm for managing the disk space reserved for the backup service is not
 
 REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 
-Upon receiving this message, a peer that has a local copy of the chunk shall update its local count of this chunk. If this count drops below the desired replication degree of that chunk, it shall initiate the chunk backup subprotocol after a random delay uniformly distributed between 0 and 400 ms. If during this delay, a peer receives a PUTCHUNK message for the same file chunk, it should back off and restrain from starting yet another backup subprotocol for that file chunk.
+Upon receiving this message, a peer that has a local copy of the chunk shall update its local count of this chunk. If this count drops below the desired desiredReplication degree of that chunk, it shall initiate the chunk backup subprotocol after a random delay uniformly distributed between 0 and 400 ms. If during this delay, a peer receives a PUTCHUNK message for the same file chunk, it should back off and restrain from starting yet another backup subprotocol for that file chunk.
 
-Enhancement: If the peer that initiates the chunk backup subprotocol fails before finishing it, the replication degree of the file chunk may be lower than that desired. Can you think of a change to the protocol, compatible with the chunk backup subprotocol, that could tolerate this fault in an efficient way? Try to come up with a solution that works in both cases of execution of the chunk backup subprotocol, i.e. both when a chunk is being backed up for the first time and when a copy of the chunk is deleted.
+Enhancement: If the peer that initiates the chunk backup subprotocol fails before finishing it, the desiredReplication degree of the file chunk may be lower than that desired. Can you think of a change to the protocol, compatible with the chunk backup subprotocol, that could tolerate this fault in an efficient way? Try to come up with a solution that works in both cases of execution of the chunk backup subprotocol, i.e. both when a chunk is being backed up for the first time and when a copy of the chunk is deleted.
 
 3.6 Protocol Enhancements
 
@@ -203,7 +203,7 @@ Any message either new or modified must use a version different from '1''.''0', 
 The peers must also provide an interface to allow a testing client to:
 
 Backup a file
-The client shall specify the file pathname and the desired replication degree.
+The client shall specify the file pathname and the desired desiredReplication degree.
 Restore a file
 The client shall specify file to restore is specified by the its pathname.
 Delete a file
@@ -215,14 +215,14 @@ This operation allows to observe the service state. In response to such a reques
 For each file whose backup it has initiated:
 The file pathname
 The backup service id of the file
-The desired replication degree
+The desired desiredReplication degree
 For each chunk of the file:
 Its id
-Its perceived replication degree
+Its perceived desiredReplication degree
 For each chunk it stores:
 Its id
 Its size (in KBytes)
-Its perceived replication degree
+Its perceived desiredReplication degree
 The peer's storage capacity, i.e. the maximum amount of disk space that can be used to store chunks, and the amount of storage (both in KBytes) used to backup the chunks.
 5. Implementation Aspects
 
@@ -264,12 +264,12 @@ Is the operation the peer of the backup service must execute. It can be either t
 <opnd_1>
 Is either the path name of the file to backup/restore/delete, for the respective 3 subprotocols, or the amount of space to reclaim (in KByte). In the latter case, the peer should execute the RECLAIM protocol, upon deletion of any chunk. The STATE operation takes no operands.
 <opnd_2>
-This operand is an integer that specifies the desired replication degree and applies only to the backup protocol (or its enhancement)
+This operand is an integer that specifies the desired desiredReplication degree and applies only to the backup protocol (or its enhancement)
 E.g., by invoking:
 
 $ java TestApp 1923 BACKUP test1.pdf 3
  
-your TestApp is supposed to trigger the backup of file test1.pdf with a replication degree of 3. Likewise, by invoking:
+your TestApp is supposed to trigger the backup of file test1.pdf with a desiredReplication degree of 3. Likewise, by invoking:
 
 $ java TestApp 1923 RESTORE test1.pdf
  

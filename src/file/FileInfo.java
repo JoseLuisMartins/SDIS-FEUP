@@ -2,36 +2,57 @@ package file;
 
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class FileInfo implements Serializable{
 
     private String fileId;
-    private int replication;
+    private int desiredReplication;
+    private HashMap<Integer, HashSet<Integer>> peersWithTheChunks;
     private String path;
-    private ArrayList<Chunk> chunks;
+    private int nChunks;
 
-    public FileInfo(String fileId, int replication, String path, ArrayList<Chunk> chunks){
+    public FileInfo(String fileId, int desiredReplication, String path, int nChunks){
         this.fileId = fileId;
-        this.replication = replication;
+        this.desiredReplication = desiredReplication;
         this.path = path;
-        this.chunks = chunks;
+        this.nChunks = nChunks;
+        this.peersWithTheChunks = new HashMap<>();
+        for (int i = 0; i <= nChunks ; i++){
+            peersWithTheChunks.put(i,new HashSet<>());
+        }
+
+    }
+
+    public void updateFileChunk(int chunkNo,int serverId,boolean add){
+        HashSet<Integer> set = peersWithTheChunks.get(chunkNo);
+        if(add)
+            set.add(serverId);
+        else
+            set.remove(serverId);
+
+        peersWithTheChunks.put(chunkNo, set);
+    }
+
+    public int getPerceivedDegree(int chunkNo){
+        return peersWithTheChunks.get(chunkNo).size();
     }
 
     public String getFileId() {
         return fileId;
     }
 
-    public int getReplication() {
-        return replication;
+    public int getDesiredReplication() {
+        return desiredReplication;
     }
 
     public String getPath() {
         return path;
     }
 
-    public ArrayList<Chunk> getChunks() {
-        return chunks;
+    public int getNChunks() {
+        return nChunks;
     }
 
     @Override

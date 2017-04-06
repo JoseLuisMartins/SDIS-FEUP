@@ -5,6 +5,7 @@ package logic;
 import file.ChunkID;
 import file.FileInfo;
 
+import java.io.FileDescriptor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +53,8 @@ public class Metadata implements Serializable{
     }
 
 
+
+
     public void removeFile(String id){
         backupFilesMetadata.remove(id);
     }
@@ -97,13 +100,21 @@ public class Metadata implements Serializable{
     }
 
     public void updateReplicationDegree(ChunkID chunkId,int serverId,boolean add) {
-        HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId.toString());
-        if(add)
-            set.add(serverId);
-        else
-            set.remove(serverId);
+        if(storedChunksPerceivedDegree.get(chunkId.toString()) != null) {//
 
-        storedChunksPerceivedDegree.put(chunkId.toString(), set);
+            HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId.toString());
+            if (add)
+                set.add(serverId);
+            else
+                set.remove(serverId);
+
+            storedChunksPerceivedDegree.put(chunkId.toString(), set);
+        }else {//it's a chunk that i have backed up
+            FileInfo file = backupFilesMetadata.get(chunkId.getFileID());
+            file.updateFileChunk(chunkId.getChunkID(),serverId,add);
+        }
+
+
     }
 
     public void removeChunk(ChunkID chunkId) {
@@ -161,7 +172,20 @@ public class Metadata implements Serializable{
             res += "\n\n";
         }
 
-            res+= "\n  maximumDiskSpace=" + maximumDiskSpace;
+        res+= "\n  maximumDiskSpace=" + maximumDiskSpace;
+
+      /*  for(HashMap.Entry<String, FileDescriptor> entry : backupFilesMetadata.entrySet()) {
+            String key = entry.getKey();
+            HashSet<Integer> perceivedRep = entry.getValue();
+
+            res+= "key-> " + key + " Current_Rep_Deg-> " + perceivedRep.size() + " Desired_Rep_Deg-> " + storedChunksDesiredDegree.get(key) + "\n";
+            res+= "Server's hosting the chunk-> ";
+
+            for (Integer id: perceivedRep){
+                res += id + " / ";
+            }
+            res += "\n\n";
+        }*/
         return res;
     }
 }
