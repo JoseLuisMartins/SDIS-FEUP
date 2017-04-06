@@ -157,6 +157,7 @@ public class Protocol {
 
 
         try {
+            welcomeSocket.close();
             restoreFile(chunks,"[RESTORED]" + pathName );
         } catch (IOException e) {
             e.printStackTrace();
