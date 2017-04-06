@@ -53,8 +53,6 @@ public class Metadata implements Serializable{
     }
 
 
-
-
     public void removeFile(String id){
         backupFilesMetadata.remove(id);
     }
@@ -116,6 +114,7 @@ public class Metadata implements Serializable{
 
 
     }
+
 
     public void removeChunk(ChunkID chunkId) {
         storedChunksPerceivedDegree.remove(chunkId.toString());

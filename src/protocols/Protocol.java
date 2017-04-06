@@ -147,7 +147,8 @@ public class Protocol {
         Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
         msg.send(Utils.mc);
 
-        //TODO UPDATE METADATA
+        Utils.metadata.removeFile(fileId);
+
         return "Delete handled sucessfully";
     }
 
