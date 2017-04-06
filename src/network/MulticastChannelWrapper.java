@@ -106,7 +106,7 @@ public class MulticastChannelWrapper implements Runnable{
 
         switch (msg.getType()){
             case PUTCHUNK:
-                if(!Utils.metadata.isMyFile(msg.getFileId())){
+                if(!FileManager.isMyFile(msg.getFileId())){
 
                     System.out.println("[RECEIVED PUTCHUNK] Peer occupied space( " + getSizeOfBackupFolder() + ") fileId( " + msg.getFileId() + ") ,chunkNo(" + msg.getChunkNo() + ")");
 
@@ -116,7 +116,7 @@ public class MulticastChannelWrapper implements Runnable{
 
 
 
-                    boolean hasChunk=hasChunk(chunkId);
+                    boolean hasChunk=isStoredChunk(chunkId);
 
                     if(((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
                             Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
@@ -154,7 +154,7 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case GETCHUNK:
 
-                if(hasChunk(chunkId)){
+                if(isStoredChunk(chunkId)){
                     String version = msg.getVersion();
                     boolean withEnhancement=false;
 
@@ -215,7 +215,7 @@ public class MulticastChannelWrapper implements Runnable{
                 break;
             case REMOVED:
 
-                if(hasChunk(chunkId)) {
+                if(isStoredChunk(chunkId)) {
                     Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),false);
 
 
@@ -238,9 +238,8 @@ public class MulticastChannelWrapper implements Runnable{
 
                 break;
             case STORED:
-                if(hasChunk(chunkId)) {
+                if(FileManager.isStoredChunk(chunkId) || FileManager.isMyFile(chunkId.getFileID())) {//if it's either a file that i have backed up or a chunk that i have stored, update the rep degree
                     Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),true);//update metadata
-
                 }
 
                 break;

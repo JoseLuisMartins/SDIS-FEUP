@@ -45,12 +45,6 @@ public class Metadata implements Serializable{
         backupFilesMetadata.put(info.getFileId(),info);
     }
 
-    public boolean isMyFile(String fileId){
-        if (backupFilesMetadata.get(fileId) == null)
-            return false;
-
-        return true;
-    }
 
 
     public void removeFile(String id){

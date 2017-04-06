@@ -112,19 +112,22 @@ public class FileManager {
         return dir.exists();
     }
 
-    public static boolean hasChunk(ChunkID chunkID){
+    public static boolean isStoredChunk(ChunkID chunkID){
 
-        /*StringBuilder path = new StringBuilder().append(CHUNKS_FOLDER_NAME).append("/").append(chunkID.getFileID()).append("/").append(chunkID.getChunkID());
-        File f = new File(path.toString());
-
-        return f.exists();*/
-
-
-        if(Utils.metadata.getDesiredDegree(chunkID) == null && !(Utils.metadata.isMyFile(chunkID.getFileID())))//if it's not a chunk that i have stored and it's not a chunk of a file that i have baked up
+        if(Utils.metadata.getDesiredDegree(chunkID) == null )//if it's not a chunk that i have stored
             return false;
 
         return true;
     }
+
+    public static boolean isMyFile(String fileId){
+        if (Utils.metadata.getBackupFilesMetadata().get(fileId) == null)
+            return false;
+
+        return true;
+    }
+
+
 
 
     // restore a file
