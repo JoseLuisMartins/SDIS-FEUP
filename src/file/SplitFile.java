@@ -86,5 +86,6 @@ public class SplitFile {
         System.out.println("File: " + file.getName());
         System.out.println("Path: " + file.getAbsolutePath());
         System.out.println("File ID: " + fileId);
+        System.out.println("-------------------------------------");
     }
 }

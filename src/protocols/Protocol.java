@@ -53,31 +53,6 @@ public class Protocol {
         return "Backup handled sucessfully";
     }
 
-/*
-    public  static void putChunkProtocol(Chunk currentChunk,int replicationDegree) {
-        int time_interval = 1000;
-        ChunkID chunkId = currentChunk.getId();
-
-        for (int j = 0; j < MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
-
-            Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, currentChunk.getContent());
-
-            network.Observer obs = new network.Observer(Utils.mc);
-            msg.send(Utils.mdb);
-
-            //wait 1 sec
-            sleepSpecificTime(time_interval);
-            //check responses
-            obs.stop();
-            System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
-
-            if (obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID()) >= replicationDegree)
-                break;
-
-            //try again
-            time_interval *= 2;
-        }
-    }*/
 
     public static String startRestore(String pathName,boolean withEnhancement){
         File f = new File(pathName);
@@ -125,7 +100,7 @@ public class Protocol {
                                 dis.readFully(chunkData);
                             }
 
-                            System.out.println("Received chunk via TCP with size(" + len + ")");
+                            System.out.println("Received chunk via TCP with size(" + len + ")" + " ,fileId(" + fileId +")" + " ,chunkNo(" + currChunk + ")");
                             chunks.add(new Chunk(fileId,currChunk,chunkData));
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -133,7 +108,7 @@ public class Protocol {
 
 
                     }else {
-                        System.out.println("Received chunk via Multicast with size(" + chunkMsg.getMessageBody().length + ")");
+                        System.out.println("Received chunk via Multicast with size(" + chunkMsg.getMessageBody().length + ")" + " ,fileId(" + fileId +")" + " ,chunkNo(" + currChunk + ")");
                         chunks.add(new Chunk(fileId, currChunk, chunkMsg.getMessageBody()));
                     }
                     break;

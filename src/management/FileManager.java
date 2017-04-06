@@ -60,12 +60,14 @@ public class FileManager {
 
         path.append("/").append(chunkId.getChunkID());
         File chunkFile = new File(path.toString());
-        chunkFile.delete();
 
-        String[]entries = folder.list();
+        if(chunkFile.exists()) {
+            chunkFile.delete();
+            String[] entries = folder.list();
 
-        if(entries.length == 0)//if it's the only chunk of that file, eliminate the folder as well
-            folder.delete();
+            if (entries.length == 0)//if it's the only chunk of that file, eliminate the folder as well
+                folder.delete();
+        }
     }
 
 

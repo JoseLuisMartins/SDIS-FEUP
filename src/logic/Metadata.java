@@ -108,7 +108,7 @@ public class Metadata implements Serializable{
 
     public void removeChunk(ChunkID chunkId) {
         storedChunksPerceivedDegree.remove(chunkId.toString());
-        storedChunksPerceivedDegree.remove(chunkId.toString());
+        storedChunksDesiredDegree.remove(chunkId.toString());
     }
 
     public ArrayList getSortedChunksToEliminate(){

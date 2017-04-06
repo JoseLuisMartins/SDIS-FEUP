@@ -41,9 +41,11 @@ public class PutChunk implements Runnable{
 
         //try again
         time_interval*=2;
+
+        if(j == Protocol.MAX_PUTCHUNK_TRIES-1)
+                System.out.println("Exceeded number of putchunk tries");
         }
 
-        System.out.println("Exceeded number of putchunk tries");
 
     }
 }

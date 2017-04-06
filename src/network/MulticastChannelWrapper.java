@@ -108,18 +108,12 @@ public class MulticastChannelWrapper implements Runnable{
             case PUTCHUNK:
                 if(!Utils.metadata.isMyFile(msg.getFileId())){
 
-                    System.out.println("PUTCHUNK [size of folder]-> " + getSizeOfBackupFolder() + " fileId-> " + msg.getFileId() + "chunkNo-> " + msg.getChunkNo());
+                    System.out.println("[RECEIVED PUTCHUNK] Peer occupied space( " + getSizeOfBackupFolder() + ") fileId( " + msg.getFileId() + ") ,chunkNo(" + msg.getChunkNo() + ")");
 
 
                     //Enhancement 1 - Ensure the desired Replication Degree
                     Observer obs= new Observer(Utils.mc);
-                    Utils.sleepRandomTime(400);
-                    obs.stop();
 
-                    int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
-                    System.out.println("PUTCHUNK PERCEIVED DEGREE-> " + perceivedDegree);
-                    if (perceivedDegree >= msg.getReplicationDeg())
-                        break;
 
 
                     boolean hasChunk=hasChunk(chunkId);
@@ -141,10 +135,19 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                     if(hasChunk){
+                        Utils.sleepRandomTime(800);
+                        obs.stop();
 
-                        Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
-                        Utils.sleepRandomTime(400);
-                        response.send(Utils.mc);
+                        int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
+                        System.out.println("PUTCHUNK PERCEIVED DEGREE-> " + perceivedDegree);
+                        if (perceivedDegree >= msg.getReplicationDeg()) {
+                            Utils.metadata.removeChunk(chunkId);
+                            FileManager.deleteChunk(chunkId);
+                        }else {
+                            Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
+                            Utils.sleepRandomTime(400);
+                            response.send(Utils.mc);
+                        }
                     }
                 }
 
@@ -180,7 +183,7 @@ public class MulticastChannelWrapper implements Runnable{
                                     dos.write(chunk, 0, chunk.length);
                                 }
 
-
+                                System.out.println("Sending chunk over TCP fileId(" + msg.getFileId() +") , chunkNo(" +  msg.getChunkNo() + ")");
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -229,14 +232,30 @@ public class MulticastChannelWrapper implements Runnable{
                             Thread threadPc = new Thread(pc);
                             threadPc.start();
                         }
-                        System.out.println("exiting removed handler");
+
                     }
                 }
 
                 break;
             case STORED:
                 if(hasChunk(chunkId)) {
-                        Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),true);
+                    Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),true);//update metadata
+
+
+                    //FAILED try of enhancement 1
+                   /* if(Utils.metadata.getPerceivedDegree(chunkId) >= Utils.metadata.getDesiredDegree(chunkId)) {//remove the chunk
+                        //remove chunk from metadata
+                        Utils.metadata.removeChunk(chunkId);
+                        deleteChunk(chunkId);
+
+                        System.out.println("Removing chunk-> " + chunkId.getFileID() + "   chunkNo-> " + chunkId.getChunkID());
+                        //send removed msg
+                        Message removed = new Message(MessageType.REMOVED, Utils.version, Utils.peerID, chunkId.getFileID(),chunkId.getChunkID());
+                        removed.send(Utils.mc);
+
+                    }*/
+
+
                 }
 
                 break;
