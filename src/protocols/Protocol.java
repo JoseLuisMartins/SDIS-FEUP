@@ -153,7 +153,7 @@ public class Protocol {
             if(withEnhancement) {//wait for confirmation messages
                 fileInfo.setDeleted(true);
                 version="2.0";
-                DeleteConfirmation deleteConfirmation = new DeleteConfirmation(fileInfo);
+                DeleteConfirmation deleteConfirmation = new DeleteConfirmation();
                 Thread confirmingThread = new Thread(deleteConfirmation);
                 confirmingThread.start();
             }else//just delete the file

@@ -12,10 +12,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class DeleteConfirmation implements Runnable {
-    private FileInfo fileInfo;
 
-    public DeleteConfirmation(FileInfo fileInfo) {
-        this.fileInfo=fileInfo;
+
+    public DeleteConfirmation() {
+
     }
 
     @Override
@@ -23,7 +23,7 @@ public class DeleteConfirmation implements Runnable {
         try {
             ServerSocket welcomeSocket = new ServerSocket(Utils.mc.getPort());
 
-            while (true) {
+            while (true) {//TODO: intead of while true run just for like 5 seconds ...
                 Socket connectionSocket = welcomeSocket.accept();
 
                 InputStream in = connectionSocket.getInputStream();
@@ -36,12 +36,15 @@ public class DeleteConfirmation implements Runnable {
                 }
 
                 Message confirmation = new Message(confirmationBytes);
+                FileInfo fileInfo = Utils.metadata.getBackupFilesMetadata().get(confirmation.getFileId());
 
-                this.fileInfo.deletePeerChunks(confirmation.getSenderId());
+                if(fileInfo != null && fileInfo.isOnDeleteProcess()) {
+                    fileInfo.deletePeerChunks(confirmation.getSenderId());
 
-                if(this.fileInfo.isFileFullyDeleted()) {//TODO probably a problem because multiple peers can modify metadata at the same time
-                    Utils.metadata.removeFile(fileInfo.getFileId());
-                    break;
+                    if (fileInfo.isFileFullyDeleted()) {//TODO probably a problem because multiple peers can modify metadata at the same time
+                        Utils.metadata.removeFile(fileInfo.getFileId());
+                        break;
+                    }
                 }
             }
 
