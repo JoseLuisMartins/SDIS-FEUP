@@ -139,15 +139,17 @@ public class Protocol {
         return res;
     }
 
-    public static String startDelete(String pathname,boolean withEnhancement){
+    public static String startDelete(String pathName,boolean withEnhancement){
         String res=null;
-        File f = new File(pathname);
-        String fileId = Utils.sha256(f);
+
+        String fileId = Utils.metadata.getFileIdByPathName(pathName);
+
 
         FileInfo fileInfo = Utils.metadata.getFileInfo(fileId);
 
         if(fileInfo != null) {
             String version = "1.0";
+
             if(withEnhancement) {//wait for confirmation messages
                 fileInfo.setDeleted(true);
                 version="2.0";
