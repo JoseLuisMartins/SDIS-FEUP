@@ -5,10 +5,7 @@ import file.Chunk;
 import file.ChunkID;
 import file.FileInfo;
 import file.SplitFile;
-import logic.ChunkState;
-import logic.Message;
-import logic.MessageType;
-import logic.Utils;
+import logic.*;
 import management.FileManager;
 
 import java.io.*;
@@ -54,90 +51,92 @@ public class Protocol {
 
 
     public static String startRestore(String pathName,boolean withEnhancement){
-        File f = new File(pathName);
-        String fileId = Utils.sha256(f);
 
-        int currChunk=0;
-        ArrayList<Chunk> chunks=new ArrayList<>();
+        String res = null;
+        String fileId = Utils.metadata.getFileIdByPathName(pathName);
 
-        String version = Utils.version;
+        if(fileId != null) {
+            int currChunk = 0;
+            ArrayList<Chunk> chunks = new ArrayList<>();
 
-        if(withEnhancement)
-            version="2.0";
+            String version = Utils.version;
 
-        ServerSocket welcomeSocket = null;
-        try {
-            welcomeSocket = new ServerSocket(Utils.mdr.getPort());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if (withEnhancement)
+                version = "2.0";
 
-        while (true){
-            Message msg = new Message(MessageType.GETCHUNK, version, Utils.peerID, fileId, currChunk);
+            ServerSocket welcomeSocket = null;
+            try {
+                welcomeSocket = new ServerSocket(Utils.mdr.getPort());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            network.Observer obs = new network.Observer(Utils.mdr);
+            while (true) {
+                Message msg = new Message(MessageType.GETCHUNK, version, Utils.peerID, fileId, currChunk);
 
-            for (int j = 0 ; j < MAX_GETCHUNK_TRIES; j++) {//maximum of 5 tries
+                network.Observer obs = new network.Observer(Utils.mdr);
 
-                msg.send(Utils.mc);
-                sleepSpecificTime(400);
+                for (int j = 0; j < MAX_GETCHUNK_TRIES; j++) {//maximum of 5 tries
 
-                Message chunkMsg = obs.getMessage(MessageType.CHUNK,fileId,currChunk);
-                if(chunkMsg != null) { // already received the chunk
+                    msg.send(Utils.mc);
+                    sleepSpecificTime(400);
+                    obs.stop();
 
-                    if(withEnhancement) {
-                        try { //get the chunk via tcp
+                    Message chunkMsg = obs.getMessage(MessageType.CHUNK, fileId, currChunk);
+                    if (chunkMsg != null) { // already received the chunk
 
-                            Socket connectionSocket = welcomeSocket.accept();
-                            //receive chunk
-                            InputStream in = connectionSocket.getInputStream();
-                            DataInputStream dis = new DataInputStream(in);
+                        if (withEnhancement) {
+                            try { //get the chunk via tcp
 
-                            int len = dis.readInt();
-                            byte[] chunkData = new byte[len];
-                            if (len > 0) {
-                                dis.readFully(chunkData);
+                                Socket connectionSocket = welcomeSocket.accept();
+                                //receive chunk
+                                InputStream in = connectionSocket.getInputStream();
+                                DataInputStream dis = new DataInputStream(in);
+
+                                int len = dis.readInt();
+                                byte[] chunkData = new byte[len];
+                                if (len > 0) {
+                                    dis.readFully(chunkData);
+                                }
+
+                                System.out.println("Received chunk via TCP with size(" + len + ")" + " ,fileId(" + fileId + ")" + " ,chunkNo(" + currChunk + ")");
+                                chunks.add(new Chunk(fileId, currChunk, chunkData));
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
 
-                            System.out.println("Received chunk via TCP with size(" + len + ")" + " ,fileId(" + fileId +")" + " ,chunkNo(" + currChunk + ")");
-                            chunks.add(new Chunk(fileId,currChunk,chunkData));
-                        } catch (IOException e) {
-                            e.printStackTrace();
+
+                        } else {
+                            System.out.println("Received chunk via Multicast with size(" + chunkMsg.getMessageBody().length + ")" + " ,fileId(" + fileId + ")" + " ,chunkNo(" + currChunk + ")");
+                            chunks.add(new Chunk(fileId, currChunk, chunkMsg.getMessageBody()));
                         }
-
-
-                    }else {
-                        System.out.println("Received chunk via Multicast with size(" + chunkMsg.getMessageBody().length + ")" + " ,fileId(" + fileId +")" + " ,chunkNo(" + currChunk + ")");
-                        chunks.add(new Chunk(fileId, currChunk, chunkMsg.getMessageBody()));
+                        break;
                     }
-                    break;
+
+                    if (j == MAX_GETCHUNK_TRIES - 1)
+                        return "Failed to get chunk number " + currChunk + "\n Exceeded number of tries";
                 }
 
-                if(j==MAX_GETCHUNK_TRIES-1)
-                    return "Failed to get chunk number " + currChunk + "\n Exceeded number of tries";
+
+                if (chunks.get(currChunk).getContent().length < 64000)//it's the last chunk
+                    break;
+
+                currChunk++;
             }
 
 
+            try {
+                welcomeSocket.close();
+                restoreFile(chunks, pathName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            obs.stop();
+            res="Restore handled sucessfully";
+        }else
+            res="Restore failed there is no such file with path:" + pathName;
 
-
-            if(chunks.get(currChunk).getContent().length < 64000)//it's the last chunk
-                break;
-
-            currChunk++;
-        }
-
-
-
-        try {
-            welcomeSocket.close();
-            restoreFile(chunks,"[RESTORED]" + pathName );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "Restore handled sucessfully";
+        return res;
     }
 
     public static String startDelete(String pathname,boolean withEnhancement){

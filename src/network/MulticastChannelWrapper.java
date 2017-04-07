@@ -118,7 +118,7 @@ public class MulticastChannelWrapper implements Runnable{
 
                     //Enhancement 1 - Ensure the desired Replication Degree
                     Observer obs=null;
-                    if(withEnhancement);
+                    if(withEnhancement)
                      obs= new Observer(Utils.mc);
 
 

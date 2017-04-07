@@ -29,6 +29,21 @@ public class Metadata implements Serializable{
         maximumDiskSpace = 5000000;
     }
 
+    public String getFileIdByPathName(String pathName){
+
+
+        for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
+            String key = entry.getKey();
+            FileInfo currFIle =  backupFilesMetadata.get(key);
+
+            if(currFIle.getPath().equals(pathName))
+                return key;
+
+        }
+
+        return null;
+    }
+
     public HashMap<String, HashSet<Integer>> getStoredChunksPerceivedDegree() {
         return storedChunksPerceivedDegree;
     }
@@ -135,10 +150,9 @@ public class Metadata implements Serializable{
             res.add(new ChunkState(chunkID,dif));
         }
 
-        //sort descending order - more deference more need of that chunk
 
         Collections.sort(res);
-        //Collections.reverse(res);
+
 
         String debug = "delete chunk-> \n";
         for(int i=0; i < res.size();i++){
