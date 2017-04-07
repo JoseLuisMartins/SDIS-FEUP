@@ -140,7 +140,7 @@ public class Protocol {
         return "Restore handled sucessfully";
     }
 
-    public static String startDelete(String pathname){
+    public static String startDelete(String pathname,boolean withEnhancement){
         String res=null;
         File f = new File(pathname);
         String fileId = Utils.sha256(f);
@@ -148,21 +148,20 @@ public class Protocol {
         FileInfo fileInfo = Utils.metadata.getFileInfo(fileId);
 
         if(fileInfo != null) {
-            //---------if enhancement--------------
 
-            fileInfo.setDeleted(true);
+            if(withEnhancement) {//wait for confirmation messages
+                fileInfo.setDeleted(true);
 
-            //wait for confirmations
-            DeleteConfirmation deleteConfirmation = new DeleteConfirmation(fileInfo);
-            Thread confirmingThread = new Thread(deleteConfirmation);
-            confirmingThread.start();
+                DeleteConfirmation deleteConfirmation = new DeleteConfirmation(fileInfo);
+                Thread confirmingThread = new Thread(deleteConfirmation);
+                confirmingThread.start();
+            }else//just delete the file
+                Utils.metadata.removeFile(fileId);
 
-            //--------------------------------------------
+
 
             Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
             msg.send(Utils.mc);
-
-            //Utils.metadata.removeFile(fileId);
 
             res = "Deletion in progress";
         }else
@@ -180,7 +179,7 @@ public class Protocol {
             FileInfo currFileInfo = backupFilesMetadata.get(key);
 
             if(currFileInfo.isOnDeleteProcess()){
-                startDelete(currFileInfo.getPath());
+                startDelete(currFileInfo.getPath(),true);
             }
         }
 

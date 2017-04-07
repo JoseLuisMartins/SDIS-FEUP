@@ -103,6 +103,7 @@ public class MulticastChannelWrapper implements Runnable{
 
 
         ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
+        String version = msg.getVersion();
 
         switch (msg.getType()){
             case PUTCHUNK:
@@ -121,12 +122,6 @@ public class MulticastChannelWrapper implements Runnable{
                     if(((getSizeOfBackupFolder()+msg.getMessageBody().length) <= Utils.metadata.getMaximumDiskSpace()) && !hasChunk) {//check if storing the chunk will not overflow the backup space
                             Chunk chunk = new Chunk(msg.getFileId(),msg.getChunkNo(),msg.getMessageBody());
                             saveChunk(chunk);
-
-                            //with a thread
-                            //Thread t = new Thread(() -> saveChunk(chunk));
-                            //t.start();
-                            //--------------
-
                             Utils.metadata.addChunk(chunkId, msg.getReplicationDeg());
                             hasChunk=true;
                     }else if(!hasChunk)
@@ -136,16 +131,17 @@ public class MulticastChannelWrapper implements Runnable{
 
                     if(hasChunk){
                         Utils.sleepRandomTime(400);
+
+                        //Enhancement 1 - Ensure the desired Replication Degree
                         obs.stop();
 
                         int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
-                        System.out.println("PUTCHUNK PERCEIVED DEGREE-> " + perceivedDegree);
+
                         if (perceivedDegree >= msg.getReplicationDeg()) {
                             Utils.metadata.removeChunk(chunkId);
                             FileManager.deleteChunk(chunkId);
                         }else {
                             Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
-                            //Utils.sleepRandomTime(400);
                             response.send(Utils.mc);
                         }
                     }
@@ -155,7 +151,7 @@ public class MulticastChannelWrapper implements Runnable{
             case GETCHUNK:
 
                 if(isStoredChunk(chunkId)){
-                    String version = msg.getVersion();
+
                     boolean withEnhancement=false;
 
                     if(!version.equals("1.0"))
@@ -210,24 +206,30 @@ public class MulticastChannelWrapper implements Runnable{
                     deleteFileChunks(fileId);
                     Utils.metadata.removeFileChunks(fileId);
 
-                    //todo tcp to send delete confirmation
-                    //----------if enhancement --------
+                    boolean withEnhancement=false;
 
-                    try {
-                        Socket socket = new Socket(senderAddress, Utils.mc.getPort());
-                        OutputStream out = socket.getOutputStream();
-                        DataOutputStream dos = new DataOutputStream(out);
+                    if(!version.equals("1.0"))
+                        withEnhancement=true;
 
-                        Message m = new Message(MessageType.DELETED_CONFIRMATION,"2.0",Utils.peerID,fileId);
-                        byte[] confirmation = m.getMessage();
-                        dos.writeInt(confirmation.length);
-                        if (confirmation.length > 0) {
-                            dos.write(confirmation, 0, confirmation.length);
+
+
+                    if(withEnhancement) {//send confirmation message
+
+                        try {
+                            Socket socket = new Socket(senderAddress, Utils.mc.getPort());
+                            OutputStream out = socket.getOutputStream();
+                            DataOutputStream dos = new DataOutputStream(out);
+
+                            Message m = new Message(MessageType.DELETED_CONFIRMATION, "2.0", Utils.peerID, fileId);
+                            byte[] confirmation = m.getMessage();
+                            dos.writeInt(confirmation.length);
+                            if (confirmation.length > 0) {
+                                dos.write(confirmation, 0, confirmation.length);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-
                 }
 
                 break;
