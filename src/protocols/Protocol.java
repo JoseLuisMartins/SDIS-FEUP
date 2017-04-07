@@ -40,7 +40,6 @@ public class Protocol {
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
             Chunk currentChunk = chunkList.get(i);
 
-           // putChunkProtocol(currentChunk,replicationDegree);
 
             Utils.sleepSpecificTime(1000);// because of io exception, to prevent the network overflow
 
@@ -142,14 +141,49 @@ public class Protocol {
     }
 
     public static String startDelete(String pathname){
+        String res=null;
         File f = new File(pathname);
         String fileId = Utils.sha256(f);
-        Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
-        msg.send(Utils.mc);
 
-        Utils.metadata.removeFile(fileId);
+        FileInfo fileInfo = Utils.metadata.getFileInfo(fileId);
 
-        return "Delete handled sucessfully";
+        if(fileInfo != null) {
+            //---------if enhancement--------------
+
+            fileInfo.setDeleted(true);
+
+            //wait for confirmations
+            DeleteConfirmation deleteConfirmation = new DeleteConfirmation(fileInfo);
+            Thread confirmingThread = new Thread(deleteConfirmation);
+            confirmingThread.start();
+
+            //--------------------------------------------
+
+            Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
+            msg.send(Utils.mc);
+
+            //Utils.metadata.removeFile(fileId);
+
+            res = "Deletion in progress";
+        }else
+            res = "The file you are trying to delete was not backed up";
+
+        return res;
+    }
+
+    public static void checkFilesNotFullyDeleted(){
+        HashMap<String, FileInfo> backupFilesMetadata = Utils.metadata.getBackupFilesMetadata();
+
+        for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
+            String key = entry.getKey();
+
+            FileInfo currFileInfo = backupFilesMetadata.get(key);
+
+            if(currFileInfo.isOnDeleteProcess()){
+                startDelete(currFileInfo.getPath());
+            }
+        }
+
     }
 
     public static String startReclaim(int desiredSize){

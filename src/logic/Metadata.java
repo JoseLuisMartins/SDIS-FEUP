@@ -37,6 +37,10 @@ public class Metadata implements Serializable{
         return storedChunksPerceivedDegree.get(chunkid.toString()).size();
     }
 
+    public  FileInfo getFileInfo(String fileId){
+        return backupFilesMetadata.get(fileId);
+    }
+
     public HashMap<String, FileInfo> getBackupFilesMetadata() {
         return backupFilesMetadata;
     }
@@ -165,20 +169,16 @@ public class Metadata implements Serializable{
             res += "\n\n";
         }
 
-        res+= "\n  maximumDiskSpace=" + maximumDiskSpace;
+        res+= "\n  maximumDiskSpace=" + maximumDiskSpace + "\n";
 
-      /*  for(HashMap.Entry<String, FileDescriptor> entry : backupFilesMetadata.entrySet()) {
+
+        for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
             String key = entry.getKey();
-            HashSet<Integer> perceivedRep = entry.getValue();
 
-            res+= "key-> " + key + " Current_Rep_Deg-> " + perceivedRep.size() + " Desired_Rep_Deg-> " + storedChunksDesiredDegree.get(key) + "\n";
-            res+= "Server's hosting the chunk-> ";
+            res += backupFilesMetadata.get(key).toString();
+        }
 
-            for (Integer id: perceivedRep){
-                res += id + " / ";
-            }
-            res += "\n\n";
-        }*/
+
         return res;
     }
 }

@@ -67,6 +67,7 @@ public class Message {
                 this.chunkNo = Integer.parseInt(headerFields[4]);
                 break;
             case DELETE://DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
+            case DELETED_CONFIRMATION:
                 break;
         }
 
@@ -108,9 +109,10 @@ public class Message {
             case CHUNK:
             case REMOVED:
             case STORED:
-                sb.append(chunkNo).append(SEPARATOR).append(SEPARATOR).append(CRLF).append(CRLF);
+                sb.append(chunkNo).append(SEPARATOR).append(CRLF).append(CRLF);
                 break;
             case DELETE:
+            case DELETED_CONFIRMATION:
                 sb.append(CRLF).append(CRLF);
                 break;
         }

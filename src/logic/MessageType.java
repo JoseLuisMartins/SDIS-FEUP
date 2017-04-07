@@ -7,5 +7,6 @@ public enum MessageType {
     CHUNK,
     DELETE,
     REMOVED,
-    STORED
+    STORED,
+    DELETED_CONFIRMATION
 }

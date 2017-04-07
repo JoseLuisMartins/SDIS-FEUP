@@ -11,15 +11,17 @@ public class FileInfo implements Serializable{
     private int desiredReplication;
     private HashMap<Integer, HashSet<Integer>> peersWithTheChunks;
     private String path;
+    private boolean inDeleteProcess;
     private int nChunks;
 
     public FileInfo(String fileId, int desiredReplication, String path, int nChunks){
         this.fileId = fileId;
         this.desiredReplication = desiredReplication;
         this.path = path;
+        this.inDeleteProcess =false;
         this.nChunks = nChunks;
         this.peersWithTheChunks = new HashMap<>();
-        for (int i = 0; i <= nChunks ; i++){
+        for (int i = 0; i < nChunks ; i++){
             peersWithTheChunks.put(i,new HashSet<>());
         }
 
@@ -55,6 +57,40 @@ public class FileInfo implements Serializable{
         return nChunks;
     }
 
+
+    public void setDeleted(boolean deleted) {
+        this.inDeleteProcess = deleted;
+    }
+
+    public boolean isOnDeleteProcess() {
+        return inDeleteProcess;
+    }
+
+    public void deletePeerChunks(int peerId) {//remove all the chunks of the file stored in the peer wir peerId
+        for(HashMap.Entry<Integer, HashSet<Integer>> entry : peersWithTheChunks.entrySet()) {
+            Integer key = entry.getKey();
+
+            peersWithTheChunks.get(key).remove(peerId);
+        }
+
+    }
+
+    public boolean isFileFullyDeleted() {//check for all chunks if they are not stored in any peer
+
+        for(HashMap.Entry<Integer, HashSet<Integer>> entry : peersWithTheChunks.entrySet()) {
+            Integer key = entry.getKey();
+
+            if(peersWithTheChunks.get(key).size() > 0){
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+    
+    
+
     @Override
     public boolean equals(Object obj) {
 
@@ -70,5 +106,17 @@ public class FileInfo implements Serializable{
 
 
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "FileInfo{" +
+                "fileId='" + fileId + '\'' +
+                ", desiredReplication=" + desiredReplication +
+                ", peersWithTheChunks=" + peersWithTheChunks +
+                ", path='" + path + '\'' +
+                ", inDeleteProcess=" + inDeleteProcess +
+                ", nChunks=" + nChunks +
+                '}';
     }
 }

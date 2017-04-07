@@ -59,17 +59,15 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + " ready ------" + '\n');
 
 
-        //debug------------
-
-        /*
-        deleteChunk(new ChunkID("93B271DA59B3C77D199CF52989E2CEBB94BFDBC4F44082573EB9472ACD104CE8",0));
-
-        /**/
-        //----------------------
 
         BackupService service = new BackupService();
         //bind remote object
         String accessPoint = args[2];
+
+        //check if there are still files to delete
+        // ------ DELETE ENHANCEMENT -------
+        Protocol.checkFilesNotFullyDeleted();
+        //------------------------
 
 
         try {
@@ -108,7 +106,6 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
             }
         }, "Shutdown-thread"));
-
 
     }
 

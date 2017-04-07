@@ -208,8 +208,26 @@ public class MulticastChannelWrapper implements Runnable{
                 String fileId = msg.getFileId();
                 if(hasFileChunks(fileId)) {
                     deleteFileChunks(fileId);
-                    //update metadata
                     Utils.metadata.removeFileChunks(fileId);
+
+                    //todo tcp to send delete confirmation
+                    //----------if enhancement --------
+
+                    try {
+                        Socket socket = new Socket(senderAddress, Utils.mc.getPort());
+                        OutputStream out = socket.getOutputStream();
+                        DataOutputStream dos = new DataOutputStream(out);
+
+                        Message m = new Message(MessageType.DELETED_CONFIRMATION,"2.0",Utils.peerID,fileId);
+                        byte[] confirmation = m.getMessage();
+                        dos.writeInt(confirmation.length);
+                        if (confirmation.length > 0) {
+                            dos.write(confirmation, 0, confirmation.length);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 }
 
                 break;
