@@ -82,7 +82,7 @@ public class SplitFile {
     }
 
     private void debug(){
-        System.out.println("SIZE: " + getChunksList().size());
+        System.out.println("Number of Chunks: " + getChunksList().size());
         System.out.println("File: " + file.getName());
         System.out.println("Path: " + file.getAbsolutePath());
         System.out.println("File ID: " + fileId);

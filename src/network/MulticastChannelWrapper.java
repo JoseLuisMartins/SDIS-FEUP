@@ -185,9 +185,10 @@ public class MulticastChannelWrapper implements Runnable{
                             }
 
 
-                        }else
-                            response = new Message(MessageType.CHUNK,version,Utils.peerID,msg.getFileId(),msg.getChunkNo(),loadChunk(chunkId));
-
+                        }else {
+                            System.out.println("Sending chunk over Multicast fileId(" + msg.getFileId() +") , chunkNo(" +  msg.getChunkNo() + ")");
+                            response = new Message(MessageType.CHUNK, version, Utils.peerID, msg.getFileId(), msg.getChunkNo(), loadChunk(chunkId));
+                        }
 
                         response.send(Utils.mdr);
 
