@@ -14,6 +14,8 @@ public class FileInfo implements Serializable{
     private String path;
     private boolean inDeleteProcess;
     private int nChunks;
+    //enhancement 4
+    private boolean backupHasFailed;
 
     public FileInfo(String fileId, int desiredReplication, String path, int nChunks){
         this.fileId = fileId;
@@ -22,6 +24,8 @@ public class FileInfo implements Serializable{
         this.inDeleteProcess =false;
         this.nChunks = nChunks;
         this.peersWithTheChunks = new HashMap<>();
+        this.backupHasFailed = false;
+
         for (int i = 0; i < nChunks ; i++){
             peersWithTheChunks.put(i,new HashSet<>());
         }
@@ -91,8 +95,16 @@ public class FileInfo implements Serializable{
         return true;
 
     }
-    
-    
+
+    public boolean getIfBackupHasFailed() {
+        return this.backupHasFailed;
+    }
+
+    public void setBackupHasFailed(boolean backupHasFailed) {
+        this.backupHasFailed = backupHasFailed;
+    }
+
+
 
     @Override
     public boolean equals(Object obj) {
@@ -120,6 +132,7 @@ public class FileInfo implements Serializable{
                 ", path='" + path + '\'' +
                 ", inDeleteProcess=" + inDeleteProcess +
                 ", nChunks=" + nChunks +
+                ", backupHasFailed=" + backupHasFailed +
                 '}';
     }
 }

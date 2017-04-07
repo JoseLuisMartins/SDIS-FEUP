@@ -68,6 +68,8 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         // ------ DELETE ENHANCEMENT -------
         Protocol.checkFilesNotFullyDeleted();
         //------------------------
+        //------- RECLAIM ENHANCEMENT ----------
+        Protocol.startBackUpForFailedFiles();
 
 
         try {

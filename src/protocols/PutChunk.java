@@ -3,6 +3,7 @@ package protocols;
 
 import file.Chunk;
 import file.ChunkID;
+import file.FileInfo;
 import logic.Message;
 import logic.MessageType;
 import logic.Utils;
@@ -29,29 +30,38 @@ public class PutChunk implements Runnable{
         if(withEnhancement)
             version = "2.0";
 
+        Boolean backupHasFailed = false;
+
         for (int j = 0 ; j < Protocol.MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
 
-        Message msg = new Message(MessageType.PUTCHUNK, version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, chunk.getContent());
+            Message msg = new Message(MessageType.PUTCHUNK, version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, chunk.getContent());
 
-        network.Observer obs = new network.Observer(Utils.mc);
-        msg.send(Utils.mdb);
+            network.Observer obs = new network.Observer(Utils.mc);
+            msg.send(Utils.mdb);
 
-        //wait 1 sec
-        sleepSpecificTime(time_interval);
-        //check responses
-        obs.stop();
-        //System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
+            //wait 1 sec
+            sleepSpecificTime(time_interval);
+            //check responses
+            obs.stop();
+            //System.out.println("Number-> " +  obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) + "\nchunk-> " + chunkId.toString() + "\nj-> " + j);
 
-        if(obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
-            break;
+            if(obs.getMessageNumber(MessageType.STORED,chunkId.getFileID(),chunkId.getChunkID()) >= replicationDegree)
+                break;
 
-        //try again
-        time_interval*=2;
+            //try again
+            time_interval*=2;
 
-        if(j == Protocol.MAX_PUTCHUNK_TRIES-1)
+            if(j == Protocol.MAX_PUTCHUNK_TRIES-1) {
                 System.out.println("Exceeded number of putchunk tries");
+                //enhancement 4
+                backupHasFailed = true;
+            }
         }
 
+        //enhancement 4
+        FileInfo fileMetadata = Utils.metadata.getFileInfo(chunkId.getFileID());
+        if(fileMetadata != null) // only when its a file that i have backed up
+            fileMetadata.setBackupHasFailed(backupHasFailed);
 
     }
 }

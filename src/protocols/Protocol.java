@@ -30,8 +30,12 @@ public class Protocol {
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
 
-        FileInfo info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList.size());
-        Utils.metadata.addFile(info);
+        FileInfo info = Utils.metadata.getFileInfo(sf.getFileId());
+
+        if(info == null) {
+            info = new FileInfo(sf.getFileId(),replicationDegree, pathName, chunkList.size());
+            Utils.metadata.addFile(info);
+        }
 
 
         for (int i = 0; i < chunkList.size(); i++){//for each chunk
@@ -47,6 +51,24 @@ public class Protocol {
         }
 
         return "Backup handled sucessfully";
+    }
+
+    public static void startBackUpForFailedFiles(){
+        HashMap<String, FileInfo>  backedUpFilesMetadata= Utils.metadata.getBackupFilesMetadata();
+
+        for(HashMap.Entry<String, FileInfo> entry : backedUpFilesMetadata.entrySet()) {
+            String key = entry.getKey();
+            FileInfo currFile = backedUpFilesMetadata.get(key);
+
+            if(currFile.getIfBackupHasFailed()) {
+                try {
+                    startBackup(currFile.getPath(), currFile.getDesiredReplication(), true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
 
