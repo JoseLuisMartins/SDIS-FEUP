@@ -168,28 +168,28 @@ public class Metadata implements Serializable{
 
     @Override
     public String toString() {
-        String res="-----------------------Metadata-----------------------\n";
+        String res="-----------------------Metadata-----------------------\n\n";
 
         for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
             String key = entry.getKey();
             HashSet<Integer> perceivedRep = entry.getValue();
 
-            res+= "key-> " + key + " Current_Rep_Deg-> " + perceivedRep.size() + " Desired_Rep_Deg-> " + storedChunksDesiredDegree.get(key) + "\n";
-            res+= "Server's hosting the chunk-> ";
+            res+= "key: " + key + " Current_Rep_Deg: " + perceivedRep.size() + " Desired_Rep_Deg: " + storedChunksDesiredDegree.get(key) + "\n";
+            res+= "Server's hosting the chunk: ";
 
             for (Integer id: perceivedRep){
                 res += id + " / ";
             }
-            res += "\n\n";
+            res += "\n";
         }
 
-        res+= "\n  maximumDiskSpace=" + maximumDiskSpace + "\n";
+        res+= "\nMaximum usable disk space allowed: " + maximumDiskSpace + "\n";
 
-
+        res += "\n------------Backed Files Metadata------------\n\n";
         for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
             String key = entry.getKey();
 
-            res += backupFilesMetadata.get(key).toString();
+            res += backupFilesMetadata.get(key).toString() + "\n";
         }
 
 
