@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 
+@SuppressWarnings("serial")
 public class FileInfo implements Serializable{
 
     private String fileId;

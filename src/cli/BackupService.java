@@ -19,7 +19,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 
-
+@SuppressWarnings("serial")
 public class BackupService extends UnicastRemoteObject implements ServerInterface {
 
 

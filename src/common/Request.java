@@ -3,6 +3,7 @@ package common;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Request implements Serializable {
     private ProtocolType operation;
     private String opnd1;
@@ -34,20 +35,13 @@ public class Request implements Serializable {
                 }
                 break;
             case RESTORE:
-                if(args.length == 3) {
-                    validRequest = true;
-                    opnd1=args[2];//file path
-                }
             case DELETE:
-                if(args.length == 3) {
-                    validRequest = true;
-                    opnd1=args[2];//file path
-                }
             case RECLAIM:
                 if(args.length == 3) {
                     validRequest = true;
-                    opnd1=args[2];//reclaimed space (Kb)
+                    opnd1=args[2];//file path
                 }
+                break;
             case STATE:
                 if(args.length == 2){
                     validRequest = true;

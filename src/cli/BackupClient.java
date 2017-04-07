@@ -20,7 +20,7 @@ import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
+@SuppressWarnings("serial")
 public class BackupClient extends UnicastRemoteObject implements CallBackInterface,Serializable {
 
 

@@ -3,6 +3,7 @@ package file;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class ChunkID implements Serializable{
 
     // obtained applying SHA256 to some bit string

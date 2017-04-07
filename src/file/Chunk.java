@@ -3,6 +3,7 @@ package file;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Chunk implements Serializable{
 
     private ChunkID id;

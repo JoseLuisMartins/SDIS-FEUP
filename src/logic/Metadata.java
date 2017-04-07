@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
-
+@SuppressWarnings("serial")
 public class Metadata implements Serializable{
     private HashMap<String, HashSet<Integer>> storedChunksPerceivedDegree;
     private HashMap<String, Integer> storedChunksDesiredDegree;
@@ -134,7 +134,7 @@ public class Metadata implements Serializable{
         storedChunksDesiredDegree.remove(chunkId.toString());
     }
 
-    public ArrayList getSortedChunksToEliminate(){
+    public ArrayList<ChunkState> getSortedChunksToEliminate(){
         ArrayList<ChunkState> res = new ArrayList<>();
 
         for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
