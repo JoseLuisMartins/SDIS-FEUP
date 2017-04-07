@@ -147,10 +147,10 @@ public class Protocol {
         FileInfo fileInfo = Utils.metadata.getFileInfo(fileId);
 
         if(fileInfo != null) {
-
+            String version = "1.0";
             if(withEnhancement) {//wait for confirmation messages
                 fileInfo.setDeleted(true);
-
+                version="2.0";
                 DeleteConfirmation deleteConfirmation = new DeleteConfirmation(fileInfo);
                 Thread confirmingThread = new Thread(deleteConfirmation);
                 confirmingThread.start();
@@ -159,7 +159,7 @@ public class Protocol {
 
 
 
-            Message msg = new Message(MessageType.DELETE, Utils.version, Utils.peerID, fileId);
+            Message msg = new Message(MessageType.DELETE, version, Utils.peerID, fileId);
             msg.send(Utils.mc);
 
             res = "Deletion in progress";
