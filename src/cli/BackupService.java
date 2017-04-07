@@ -155,7 +155,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         switch (req.getOperation()){
             case BACKUP:
                 try {
-                    answer=Protocol.startBackup(req.getOpnd1(), req.getReplication());
+                    answer=Protocol.startBackup(req.getOpnd1(), req.getReplication(),req.isEnhancement());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

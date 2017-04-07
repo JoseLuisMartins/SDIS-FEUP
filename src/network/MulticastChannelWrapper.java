@@ -104,6 +104,10 @@ public class MulticastChannelWrapper implements Runnable{
 
         ChunkID chunkId= new ChunkID(msg.getFileId(), msg.getChunkNo());
         String version = msg.getVersion();
+        boolean withEnhancement=false;
+
+        if(!version.equals("1.0"))
+            withEnhancement=true;
 
         switch (msg.getType()){
             case PUTCHUNK:
@@ -113,7 +117,9 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                     //Enhancement 1 - Ensure the desired Replication Degree
-                    Observer obs= new Observer(Utils.mc);
+                    Observer obs=null;
+                    if(withEnhancement);
+                     obs= new Observer(Utils.mc);
 
 
 
@@ -132,31 +138,30 @@ public class MulticastChannelWrapper implements Runnable{
                     if(hasChunk){
                         Utils.sleepRandomTime(400);
 
-                        //Enhancement 1 - Ensure the desired Replication Degree
-                        obs.stop();
+                        //Enhancement 1 - Ensure the desired Replication Degree - check if the chunks should be kept
+                        if(withEnhancement) {
+                            obs.stop();
+                            int perceivedDegree = obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
 
-                        int perceivedDegree=obs.getMessageNumber(MessageType.STORED, chunkId.getFileID(), chunkId.getChunkID());
-
-                        if (perceivedDegree >= msg.getReplicationDeg()) {
-                            Utils.metadata.removeChunk(chunkId);
-                            FileManager.deleteChunk(chunkId);
-                        }else {
-                            Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
-                            response.send(Utils.mc);
+                            if (perceivedDegree >= msg.getReplicationDeg()) {
+                                Utils.metadata.removeChunk(chunkId);
+                                FileManager.deleteChunk(chunkId);
+                                hasChunk = false;
+                            }
                         }
                     }
+
+                    if(hasChunk){
+                        Message response = new Message(MessageType.STORED, Utils.version, Utils.peerID, msg.getFileId(), msg.getChunkNo());
+                        response.send(Utils.mc);
+                    }
+
                 }
 
                 break;
             case GETCHUNK:
 
                 if(isStoredChunk(chunkId)){
-
-                    boolean withEnhancement=false;
-
-                    if(!version.equals("1.0"))
-                        withEnhancement=true;
-
 
                     Observer obs = new Observer(Utils.mdr);
                     Utils.sleepRandomTime(400);
@@ -207,12 +212,6 @@ public class MulticastChannelWrapper implements Runnable{
                     deleteFileChunks(fileId);
                     Utils.metadata.removeFileChunks(fileId);
 
-                    boolean withEnhancement=false;
-
-                    if(!version.equals("1.0"))
-                        withEnhancement=true;
-
-
 
                     if(withEnhancement) {//send confirmation message
 
@@ -249,7 +248,7 @@ public class MulticastChannelWrapper implements Runnable{
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
                             //Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
-                            PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId),false);
                             Thread threadPc = new Thread(pc);
                             threadPc.start();
                         }

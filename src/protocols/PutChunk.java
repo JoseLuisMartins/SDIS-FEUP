@@ -12,10 +12,12 @@ import static logic.Utils.sleepSpecificTime;
 public class PutChunk implements Runnable{
     private Chunk chunk;
     private int replicationDegree;
+    private boolean withEnhancement;
 
-    public PutChunk(Chunk chunk, int replicationDegree) {
+    public PutChunk(Chunk chunk, int replicationDegree,boolean withEnhancement) {
         this.chunk = chunk;
         this.replicationDegree = replicationDegree;
+        this.withEnhancement = withEnhancement;
     }
 
     @Override
@@ -23,9 +25,13 @@ public class PutChunk implements Runnable{
         int time_interval=1000;
         ChunkID chunkId = chunk.getId();
 
+        String version = "1.0";
+        if(withEnhancement)
+            version = "2.0";
+
         for (int j = 0 ; j < Protocol.MAX_PUTCHUNK_TRIES; j++) {//maximum of 5 tries
 
-        Message msg = new Message(MessageType.PUTCHUNK, Utils.version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, chunk.getContent());
+        Message msg = new Message(MessageType.PUTCHUNK, version, Utils.peerID, chunkId.getFileID(), chunkId.getChunkID(), replicationDegree, chunk.getContent());
 
         network.Observer obs = new network.Observer(Utils.mc);
         msg.send(Utils.mdb);

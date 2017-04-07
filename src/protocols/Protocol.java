@@ -28,7 +28,7 @@ public class Protocol {
 
 
 
-    public static String startBackup(String pathName, int replicationDegree) throws IOException {
+    public static String startBackup(String pathName, int replicationDegree,boolean withEnhancement) throws IOException {
         SplitFile sf = new SplitFile(new File(pathName));
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
@@ -43,7 +43,7 @@ public class Protocol {
 
             Utils.sleepSpecificTime(1000);// because of io exception, to prevent the network overflow
 
-            PutChunk pc = new PutChunk(currentChunk,replicationDegree);
+            PutChunk pc = new PutChunk(currentChunk,replicationDegree,withEnhancement);
             Thread threadPc = new Thread(pc);
             threadPc.start();
 
