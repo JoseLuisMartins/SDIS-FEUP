@@ -70,7 +70,6 @@ public class SplitFile {
             Chunk ck = new Chunk(this.fileId, chunkNo, Arrays.copyOfRange(data, data.length - data.length % x, data.length));
             chunksList.add(ck);
         }else{
-            chunkNo++;
             Chunk ck1 = new Chunk(this.fileId, chunkNo, new byte[0]);
             chunksList.add(ck1);
         }
