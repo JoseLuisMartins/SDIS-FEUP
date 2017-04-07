@@ -161,10 +161,10 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 }
                 break;
             case RESTORE:
-                answer=Protocol.startRestore(req.getOpnd1(),false);
+                answer=Protocol.startRestore(req.getOpnd1(),req.isEnhancement());
                 break;
             case DELETE:
-                answer = Protocol.startDelete(req.getOpnd1(),false);
+                answer = Protocol.startDelete(req.getOpnd1(),req.isEnhancement());
                 break;
             case RECLAIM:
                 answer=Protocol.startReclaim(Integer.parseInt(req.getOpnd1())*1000);

@@ -8,6 +8,7 @@ public class Request implements Serializable {
     private String opnd1;
     private String opnd2;
     private boolean validRequest;
+    private boolean isEnhancement;
 
     public Request(String[] args) {
         this.validRequest=false;
@@ -16,7 +17,13 @@ public class Request implements Serializable {
 
         this.operation= ProtocolType.valueOf(args[1]);
 
-
+        if(this.operation.toString().contains("ENH")){
+            int auxSize = this.operation.toString().length() - 3;
+            this.operation = ProtocolType.valueOf(this.operation.toString().substring(0,auxSize));
+            this.isEnhancement = true;
+        }else{
+            this.isEnhancement = false;
+        }
 
         switch (operation){
             case BACKUP:
@@ -69,13 +76,18 @@ public class Request implements Serializable {
         return validRequest;
     }
 
+    public boolean isEnhancement() {
+        return isEnhancement;
+    }
+
     @Override
     public String toString() {
         return "Request{" +
-                "operation='" + operation + '\'' +
-                ", opnd1='" + opnd1 + '\'' +
-                ", opnd2='" + opnd2 + '\'' +
-                ", validRequest=" + validRequest +
+                "operation= " + operation + '\'' +
+                ", opnd1= " + opnd1 + '\'' +
+                ", opnd2= " + opnd2 + '\'' +
+                ", validRequest= " + validRequest +
+                ", isEnhancement= " + isEnhancement +
                 '}';
     }
 }

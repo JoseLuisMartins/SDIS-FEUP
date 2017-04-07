@@ -75,20 +75,19 @@ public class Utils {
     public static boolean validClientArgs(String[] args){
 
         if(args.length == 4){
-            if(!args[1].equals(ProtocolType.BACKUP.toString())) {
+            if(!args[1].equals(ProtocolType.BACKUP.toString()) && !args[1].equals(ProtocolType.BACKUPENH.toString()) ) {
                 return false;
             }
-            //^[\w,\s-]+(\\[\w,\s-]+)*\.[A-Za-z]{2,3}
             else if(args[3].matches("\\D")){
                 return false;
             }
 
             return true;
         }else if(args.length == 3) {
-            if(args[1].equals(ProtocolType.DELETE.toString()) || args[1].equals(ProtocolType.RESTORE.toString())){
+            if(args[1].equals(ProtocolType.DELETE.toString()) || args[1].equals(ProtocolType.RESTORE.toString()) ||args[1].equals(ProtocolType.DELETEENH.toString()) || args[1].equals(ProtocolType.RESTOREENH.toString())){
                 return true;
             }
-            else if(args[1].equals(ProtocolType.RECLAIM.toString())) {
+            else if(args[1].equals(ProtocolType.RECLAIM.toString()) ||args[1].equals(ProtocolType.RECLAIMENH.toString())) {
                 if (args[2].matches("\\d+")) {
                     return true;
                 } else return false;
