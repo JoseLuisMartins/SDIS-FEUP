@@ -135,8 +135,14 @@ public class Protocol {
                         break;
                     }
 
-                    if (j == MAX_GETCHUNK_TRIES - 1)
-                        return "Failed to get chunk number " + currChunk + "\n Exceeded number of tries";
+                    if (j == MAX_GETCHUNK_TRIES - 1) {
+                        try {
+                            welcomeSocket.close();
+                            return "Failed to get chunk number " + currChunk + "\n Exceeded number of tries";
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
 
 
