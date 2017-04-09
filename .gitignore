@@ -2,3 +2,7 @@
 /chunks
 /bin
 *.iml
+*.jpg
+/out
+sdis-feup.properties
+sdis-feup.xml

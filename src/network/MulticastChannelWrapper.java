@@ -7,6 +7,7 @@ import management.FileManager;
 import protocols.PutChunk;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -254,6 +255,8 @@ public class MulticastChannelWrapper implements Runnable{
                         }
 
                     }
+                }else if(FileManager.isMyFile(chunkId.getFileID())){
+                    Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),false);
                 }
 
                 break;

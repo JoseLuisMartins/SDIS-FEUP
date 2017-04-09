@@ -3,7 +3,8 @@
 SET /p servers=numero de servers :
 SET /a max=servers 
 
-javac -d bin -sourcepath src $(find . -name \*.java)
+cd ..
+cd ..
 
 cd bin
 
