@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd bin
+cd ../../bin
 
 java cli.BackupClient $1 $2 $3 $4

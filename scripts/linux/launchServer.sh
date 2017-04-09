@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd bin
+cd ../../bin
 
 x=$1
 
@@ -11,4 +11,3 @@ do
 	x=$(( $x + 1 ))
 
 done
-
