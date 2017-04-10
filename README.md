@@ -13,6 +13,7 @@ To run the peer, use the follow commands:
 	- Y represents the access point of the last peer
 	
 The ports and ip'd used by the lauchServer.sh script are:
+
 	<MC_IP> - Multicast Control Channel IP - 224.0.0.1  
 	<MC_Port> - Multicast Control Channel Port - 2222  
 	<MDB_IP> - Multicast Data Backup Channel IP - 224.0.0.2  
