@@ -8,6 +8,7 @@ import file.SplitFile;
 import logic.*;
 import management.FileManager;
 
+import javax.rmi.CORBA.Util;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -173,7 +174,7 @@ public class Protocol {
     }
 
     public static String startDelete(String pathName,boolean withEnhancement){
-        String res=null;
+        String res = null;
 
         String fileId = Utils.metadata.getFileIdByPathName(pathName);
 
@@ -181,24 +182,42 @@ public class Protocol {
         FileInfo fileInfo = Utils.metadata.getFileInfo(fileId);
 
         if(fileInfo != null) {
-            String version = "1.0";
 
             if(withEnhancement) {//wait for confirmation messages
                 fileInfo.setDeleted(true);
-                version="2.0";
+
 
                 if( !Utils.confirmationDeleteThreadRunning) {
-                    DeleteConfirmation deleteConfirmation = new DeleteConfirmation();
-                    Thread confirmingThread = new Thread(deleteConfirmation);
+                    DeleteConfirmationThread deleteConfirmationThread = new DeleteConfirmationThread();
+                    Thread confirmingThread = new Thread(deleteConfirmationThread);
                     confirmingThread.start();
                 }
-            }else//just delete the file
+
+
+                final Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        if(Utils.metadata.getFileInfo(fileId) == null) {// if the file has already been successfully deleted stop the timer task
+                            timer.cancel();
+                            timer.purge();
+                        }else {//send another delete message
+                            Message msg = new Message(MessageType.DELETE, "2.0", Utils.peerID, fileId);
+                            msg.send(Utils.mc);
+                        }
+                    }
+                }, 0, 300000);
+
+
+
+            }else {//just delete the file
                 Utils.metadata.removeFile(fileId);
+                Message msg = new Message(MessageType.DELETE, "1.0", Utils.peerID, fileId);
+                msg.send(Utils.mc);
+            }
 
 
-            //todo thread to send delete until the file is fully deleted
-            Message msg = new Message(MessageType.DELETE, version, Utils.peerID, fileId);
-            msg.send(Utils.mc);
 
             res = "Deletion in progress";
         }else
@@ -267,7 +286,7 @@ public class Protocol {
 
         StringBuilder state = new StringBuilder();
 
-        state.append("*******************Peer State*******************").append("\n");
+        state.append("*******************Peer " + Utils.peerID +" State*******************").append("\n");
 
         Iterator<Map.Entry<String,FileInfo>> itFiles = Utils.metadata.getBackupFilesMetadata().entrySet().iterator();
 
@@ -310,7 +329,8 @@ public class Protocol {
         for(HashMap.Entry<String, HashSet<Integer>> pair :  Utils.metadata.getStoredChunksPerceivedDegree().entrySet()){
             ChunkID chunkID = new ChunkID(pair.getKey());
             state.append("ID: ");
-            state.append(chunkID.getChunkID());
+            state.append("fileId(" + chunkID.getFileID() + ") ");
+            state.append("chunkNo(" + chunkID.getChunkID() + ") ");
 
 
             state.append("\nSize(KBytes): ");
@@ -327,7 +347,7 @@ public class Protocol {
         state.append("\n\n Using " + getSizeOfBackupFolder()/1000 + " of " + Utils.metadata.getMaximumDiskSpace()/1000 + " KBytes.\n");
 
 
-        state.append("************************************************").append("\n");
+        state.append("***************************************************").append("\n");
         return state.toString();
     }
 

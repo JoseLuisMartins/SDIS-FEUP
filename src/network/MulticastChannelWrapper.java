@@ -70,7 +70,6 @@ public class MulticastChannelWrapper implements Runnable{
         while(this.running){
             try {
                 //receive message
-                //todo check the length
                 byte[] receiveData = new byte[64*1024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 multicastSocket.receive(receivePacket);
@@ -222,6 +221,8 @@ public class MulticastChannelWrapper implements Runnable{
                             OutputStream out = socket.getOutputStream();
                             DataOutputStream dos = new DataOutputStream(out);
 
+                            System.out.println("Sending delete confirmation from file with fileId(" + msg.getFileId() +")\n");
+
                             Message m = new Message(MessageType.DELETED_CONFIRMATION, "2.0", Utils.peerID, fileId);
                             byte[] confirmation = m.getMessage();
                             dos.writeInt(confirmation.length);
@@ -240,13 +241,14 @@ public class MulticastChannelWrapper implements Runnable{
                 if(isStoredChunk(chunkId)) {
                     Utils.metadata.updateReplicationDegree(chunkId,msg.getSenderId(),false);
 
-
+                    System.out.println("pleaseeeeee desrepo-> " +  Utils.metadata.getDesiredDegree(chunkId) + " perdeg-> " + Utils.metadata.getPerceivedDegree(chunkId) + "\n");
 
                     if(Utils.metadata.getPerceivedDegree(chunkId) < Utils.metadata.getDesiredDegree(chunkId)) { //initiate putchunk
                         Observer obs = new Observer(Utils.mdb);
                         Utils.sleepRandomTime(400);
                         obs.stop();
 
+                        System.out.println("oi " +  "\n");
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
                             System.out.println("Chunk(" + msg.getChunkNo() + "from fileID(" + msg.getFileId() +") dropped below the desired replication degree, initiating chunk backup sub protocol\n");

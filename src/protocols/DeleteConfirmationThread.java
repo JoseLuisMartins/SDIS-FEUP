@@ -3,6 +3,7 @@ package protocols;
 
 import file.FileInfo;
 import logic.Message;
+import logic.MessageType;
 import logic.Utils;
 
 import java.io.DataInputStream;
@@ -11,10 +12,10 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class DeleteConfirmation implements Runnable {
+public class DeleteConfirmationThread implements Runnable {
 
 
-    public DeleteConfirmation() {
+    public DeleteConfirmationThread() {
 
     }
 
@@ -24,7 +25,7 @@ public class DeleteConfirmation implements Runnable {
         try {
             ServerSocket welcomeSocket = new ServerSocket(Utils.mc.getPort());
 
-            while (true) {//TODO: instead of while true run just for like 5 seconds ...
+            while (true) {
                 Socket connectionSocket = welcomeSocket.accept();
 
                 InputStream in = connectionSocket.getInputStream();
@@ -37,14 +38,19 @@ public class DeleteConfirmation implements Runnable {
                 }
 
                 Message confirmation = new Message(confirmationBytes);
-                FileInfo fileInfo = Utils.metadata.getBackupFilesMetadata().get(confirmation.getFileId());
 
-                if(fileInfo != null && fileInfo.isOnDeleteProcess()) {
-                    fileInfo.deletePeerChunks(confirmation.getSenderId());
+                if(confirmation.getType() == MessageType.DELETED_CONFIRMATION) {
+                    System.out.println("Received delete confirmation from file with fileId(" + confirmation.getFileId() +")\n");
 
-                    if (fileInfo.isFileFullyDeleted()) {
-                        Utils.metadata.removeFile(fileInfo.getFileId());
-                        break;
+                    FileInfo fileInfo = Utils.metadata.getBackupFilesMetadata().get(confirmation.getFileId());
+
+                    if (fileInfo != null && fileInfo.isOnDeleteProcess()) {
+                        fileInfo.deletePeerChunks(confirmation.getSenderId());
+
+                        if (fileInfo.isFileFullyDeleted()) {
+                            Utils.metadata.removeFile(fileInfo.getFileId());
+                            break;
+                        }
                     }
                 }
             }

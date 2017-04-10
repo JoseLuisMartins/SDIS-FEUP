@@ -11,6 +11,7 @@ import network.MulticastChannelWrapper;
 import protocols.Protocol;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.rmi.RemoteException;
@@ -158,7 +159,12 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         switch (req.getOperation()){
             case BACKUP:
                 try {
-                    answer=Protocol.startBackup(req.getOpnd1(), req.getReplication(),req.isEnhancement());
+                    File f = new File(req.getOpnd1());
+
+                    if(Utils.metadata.getBackupFilesMetadata().get(Utils.sha256(f)) != null)
+                        answer = "This file already was backed up";
+                    else
+                        answer=Protocol.startBackup(req.getOpnd1(), req.getReplication(),req.isEnhancement());
                 } catch (IOException e) {
                     System.out.println("A problem ocurred with the file you are trying to backup\n\nDescription of the Exception: \n");
                     e.printStackTrace();

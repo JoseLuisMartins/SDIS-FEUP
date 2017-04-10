@@ -87,7 +87,6 @@ public class Message {
 
 
     //receives a message type and creates it
-    //TODO refractor-> make method for each type
     public Message(MessageType type, String version, int senderId, String fileId, int chunkNo, int replicationDeg,byte[] msgBody) {
         this.type = type;
         this.version = version;
