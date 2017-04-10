@@ -28,7 +28,6 @@ public class Protocol {
     public static String startBackup(String pathName, int replicationDegree,boolean withEnhancement) throws IOException {
         File f = new File(pathName);
 
-        System.out.println("batatas");
         if(!f.exists())
             return  "The file you are trying to backup doesn't exist";
 

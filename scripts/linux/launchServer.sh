@@ -4,7 +4,6 @@ cd ../../bin
 
 x=$1
 
-rmiregistry &
 
 while [ $x -le $2 ]
 do
