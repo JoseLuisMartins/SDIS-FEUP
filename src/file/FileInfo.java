@@ -109,18 +109,24 @@ public class FileInfo implements Serializable{
     @Override
     public boolean equals(Object obj) {
 
-        if(this == obj)
-            return true;
-        else if(obj == null)
-            return false;
-
         FileInfo fileInfo = (FileInfo) obj;
 
-        if(this.fileId != fileInfo.getFileId())
+        if(!this.fileId.equals(fileInfo.getFileId()))
             return false;
 
-
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = fileId.hashCode();
+        result = 31 * result + desiredReplication;
+        result = 31 * result + peersWithTheChunks.hashCode();
+        result = 31 * result + path.hashCode();
+        result = 31 * result + (inDeleteProcess ? 1 : 0);
+        result = 31 * result + nChunks;
+        result = 31 * result + (backupHasFailed ? 1 : 0);
+        return result;
     }
 
     @Override

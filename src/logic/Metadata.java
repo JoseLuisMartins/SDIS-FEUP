@@ -26,10 +26,10 @@ public class Metadata implements Serializable{
         storedChunksDesiredDegree = new HashMap<>();
         backupFilesMetadata = new HashMap<>();
 
-        maximumDiskSpace = 5000000;
+        maximumDiskSpace = 100000000;
     }
 
-    public String getFileIdByPathName(String pathName){
+    public synchronized String getFileIdByPathName(String pathName){
 
 
         for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
@@ -44,33 +44,33 @@ public class Metadata implements Serializable{
         return null;
     }
 
-    public HashMap<String, HashSet<Integer>> getStoredChunksPerceivedDegree() {
+    public synchronized HashMap<String, HashSet<Integer>> getStoredChunksPerceivedDegree() {
         return storedChunksPerceivedDegree;
     }
 
-    public int getPerceivedDegree(ChunkID chunkid) {
+    public synchronized int getPerceivedDegree(ChunkID chunkid) {
         return storedChunksPerceivedDegree.get(chunkid.toString()).size();
     }
 
-    public  FileInfo getFileInfo(String fileId){
+    public synchronized FileInfo getFileInfo(String fileId){
         return backupFilesMetadata.get(fileId);
     }
 
-    public HashMap<String, FileInfo> getBackupFilesMetadata() {
+    public synchronized HashMap<String, FileInfo> getBackupFilesMetadata() {
         return backupFilesMetadata;
     }
 
-    public void addFile(FileInfo info){
+    public synchronized void addFile(FileInfo info){
         backupFilesMetadata.put(info.getFileId(),info);
     }
 
 
 
-    public void removeFile(String id){
+    public synchronized void removeFile(String id){
         backupFilesMetadata.remove(id);
     }
 
-    public void removeFileChunks(String fileId){
+    public synchronized void removeFileChunks(String fileId){
         ArrayList<String> keysToRemove = new ArrayList<>();
 
         for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
@@ -91,26 +91,26 @@ public class Metadata implements Serializable{
 
     }
 
-    public Integer getDesiredDegree(ChunkID chunkid) {
+    public synchronized Integer getDesiredDegree(ChunkID chunkid) {
         return storedChunksDesiredDegree.get(chunkid.toString());
     }
 
-    public int getMaximumDiskSpace() {
+    public synchronized int getMaximumDiskSpace() {
         return maximumDiskSpace;
     }
 
-    public void setMaximumDiskSpace(int maximumDiskSpace) {
+    public synchronized void setMaximumDiskSpace(int maximumDiskSpace) {
         this.maximumDiskSpace = maximumDiskSpace;
     }
 
-    public void addChunk(ChunkID chunkId,int desiredRepDeg){
+    public synchronized void addChunk(ChunkID chunkId,int desiredRepDeg){
         HashSet<Integer> set = new HashSet<>();
         set.add(Utils.peerID);//add my id to the metadata
         storedChunksPerceivedDegree.put(chunkId.toString(),set);
         storedChunksDesiredDegree.put(chunkId.toString(),desiredRepDeg);
     }
 
-    public void updateReplicationDegree(ChunkID chunkId,int serverId,boolean add) {
+    public synchronized void updateReplicationDegree(ChunkID chunkId,int serverId,boolean add) {
         if(storedChunksPerceivedDegree.get(chunkId.toString()) != null) {//
 
             HashSet<Integer> set = storedChunksPerceivedDegree.get(chunkId.toString());
@@ -125,16 +125,15 @@ public class Metadata implements Serializable{
             file.updateFileChunk(chunkId.getChunkID(),serverId,add);
         }
 
-
     }
 
 
-    public void removeChunk(ChunkID chunkId) {
+    public synchronized void removeChunk(ChunkID chunkId) {
         storedChunksPerceivedDegree.remove(chunkId.toString());
         storedChunksDesiredDegree.remove(chunkId.toString());
     }
 
-    public ArrayList<ChunkState> getSortedChunksToEliminate(){
+    public synchronized ArrayList<ChunkState> getSortedChunksToEliminate(){
         ArrayList<ChunkState> res = new ArrayList<>();
 
         for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
@@ -168,7 +167,7 @@ public class Metadata implements Serializable{
 
     @Override
     public String toString() {
-        String res="-----------------------Metadata-----------------------\n\n";
+        String res="\n\n-----------------------Metadata-----------------------\n\n";
 
         for(HashMap.Entry<String, HashSet<Integer>> entry : storedChunksPerceivedDegree.entrySet()) {
             String key = entry.getKey();
@@ -185,7 +184,7 @@ public class Metadata implements Serializable{
 
         res+= "\nMaximum usable disk space allowed: " + maximumDiskSpace + "\n";
 
-        res += "\n------------Backed Files Metadata------------\n\n";
+        res += "\n------------Backed up files metadata------------\n\n";
         for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
             String key = entry.getKey();
 

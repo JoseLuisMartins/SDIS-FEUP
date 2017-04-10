@@ -42,7 +42,12 @@ public class ChunkID implements Serializable{
         return false;
     }
 
-
+    @Override
+    public int hashCode() {
+        int result = fileID.hashCode();
+        result = 31 * result + chunkNo;
+        return result;
+    }
 
     @Override
     public String toString() {

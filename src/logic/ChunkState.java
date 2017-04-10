@@ -22,7 +22,7 @@ public class ChunkState implements Comparable<ChunkState> {
 
     @Override
     public int compareTo(ChunkState chunkState) {
-        int compareChunk = ((ChunkState) chunkState).getDeletePretencion();
+        int compareChunk = chunkState.getDeletePretencion();
 
         //descending order
         return  compareChunk - this.deletePretencion;

@@ -26,7 +26,13 @@ public class Protocol {
 
 
     public static String startBackup(String pathName, int replicationDegree,boolean withEnhancement) throws IOException {
-        SplitFile sf = new SplitFile(new File(pathName));
+        File f = new File(pathName);
+
+        System.out.println("batatas");
+        if(!f.exists())
+            return  "The file you are trying to backup doesn't exist";
+
+        SplitFile sf = new SplitFile(f);
         ArrayList<Chunk> chunkList = sf.getChunksList();
 
 
@@ -181,14 +187,17 @@ public class Protocol {
             if(withEnhancement) {//wait for confirmation messages
                 fileInfo.setDeleted(true);
                 version="2.0";
-                DeleteConfirmation deleteConfirmation = new DeleteConfirmation();
-                Thread confirmingThread = new Thread(deleteConfirmation);
-                confirmingThread.start();
+
+                if( !Utils.confirmationDeleteThreadRunning) {
+                    DeleteConfirmation deleteConfirmation = new DeleteConfirmation();
+                    Thread confirmingThread = new Thread(deleteConfirmation);
+                    confirmingThread.start();
+                }
             }else//just delete the file
                 Utils.metadata.removeFile(fileId);
 
 
-
+            //todo thread to send delete until the file is fully deleted
             Message msg = new Message(MessageType.DELETE, version, Utils.peerID, fileId);
             msg.send(Utils.mc);
 
@@ -199,7 +208,7 @@ public class Protocol {
         return res;
     }
 
-    public static void checkFilesNotFullyDeleted(){
+    public static void deleteFilesNotFullyDeleted(){
         HashMap<String, FileInfo> backupFilesMetadata = Utils.metadata.getBackupFilesMetadata();
 
         for(HashMap.Entry<String, FileInfo> entry : backupFilesMetadata.entrySet()) {
@@ -259,17 +268,17 @@ public class Protocol {
 
         StringBuilder state = new StringBuilder();
 
-        state.append("-------- Peer State --------").append("\n");
+        state.append("*******************Peer State*******************").append("\n");
 
-        Iterator itFiles = Utils.metadata.getBackupFilesMetadata().entrySet().iterator();
+        Iterator<Map.Entry<String,FileInfo>> itFiles = Utils.metadata.getBackupFilesMetadata().entrySet().iterator();
 
 
         state.append("\n").append("-------- Saved Files ---------").append("\n");
 
         while(itFiles.hasNext()){
-            Map.Entry pair = (Map.Entry)itFiles.next();
+            Map.Entry<String,FileInfo> pair = itFiles.next();
 
-            FileInfo info = (FileInfo)pair.getValue();
+            FileInfo info = pair.getValue();
 
             state.append("Path: ");
             state.append(info.getPath());
@@ -287,7 +296,7 @@ public class Protocol {
                 state.append("\n\tID: " + i);
 
 
-                state.append("  Replication: ");
+                state.append("   Perceived replication degree:: ");
                 state.append(info.getPerceivedDegree(i));
 
 
@@ -319,6 +328,7 @@ public class Protocol {
         state.append("\n\n Using " + getSizeOfBackupFolder()/1000 + " of " + Utils.metadata.getMaximumDiskSpace()/1000 + " KBytes.\n");
 
 
+        state.append("************************************************").append("\n");
         return state.toString();
     }
 

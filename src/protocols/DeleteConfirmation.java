@@ -20,10 +20,11 @@ public class DeleteConfirmation implements Runnable {
 
     @Override
     public void run() {
+        Utils.confirmationDeleteThreadRunning=true;
         try {
             ServerSocket welcomeSocket = new ServerSocket(Utils.mc.getPort());
 
-            while (true) {//TODO: intead of while true run just for like 5 seconds ...
+            while (true) {//TODO: instead of while true run just for like 5 seconds ...
                 Socket connectionSocket = welcomeSocket.accept();
 
                 InputStream in = connectionSocket.getInputStream();
@@ -41,7 +42,7 @@ public class DeleteConfirmation implements Runnable {
                 if(fileInfo != null && fileInfo.isOnDeleteProcess()) {
                     fileInfo.deletePeerChunks(confirmation.getSenderId());
 
-                    if (fileInfo.isFileFullyDeleted()) {//TODO probably a problem because multiple peers can modify metadata at the same time
+                    if (fileInfo.isFileFullyDeleted()) {
                         Utils.metadata.removeFile(fileInfo.getFileId());
                         break;
                     }
@@ -52,5 +53,6 @@ public class DeleteConfirmation implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Utils.confirmationDeleteThreadRunning=false;
     }
 }

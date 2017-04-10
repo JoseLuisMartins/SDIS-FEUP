@@ -212,6 +212,7 @@ public class MulticastChannelWrapper implements Runnable{
                 if(hasFileChunks(fileId)) {
                     deleteFileChunks(fileId);
                     Utils.metadata.removeFileChunks(fileId);
+                    System.out.println("Deleted stored chunks from file with fileId(" + msg.getFileId() +")\n");
 
 
                     if(withEnhancement) {//send confirmation message
@@ -248,7 +249,7 @@ public class MulticastChannelWrapper implements Runnable{
 
 
                         if(obs.getMessage(MessageType.PUTCHUNK,msg.getFileId(),msg.getChunkNo()) == null){//nobody has initiated putchunk protocol
-                            //Protocol.putChunkProtocol(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId));
+                            System.out.println("Chunk(" + msg.getChunkNo() + "from fileID(" + msg.getFileId() +") dropped below the desired replication degree, initiating chunk backup sub protocol\n");
                             PutChunk pc = new PutChunk(new Chunk(chunkId.getFileID(),chunkId.getChunkID(),FileManager.loadChunk(chunkId)),Utils.metadata.getDesiredDegree(chunkId),false);
                             Thread threadPc = new Thread(pc);
                             threadPc.start();

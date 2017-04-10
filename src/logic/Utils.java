@@ -21,6 +21,7 @@ public class Utils {
     public static DatagramSocket peerSocket=null;
     public static String CHUNKS_FOLDER_NAME;
     public static Metadata metadata;
+    public static Boolean confirmationDeleteThreadRunning;
 
     //PUTCHUNK
 

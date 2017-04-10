@@ -54,6 +54,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.peerID= Integer.parseInt(args[1]);
         Utils.peerSocket=new DatagramSocket();
         Utils.CHUNKS_FOLDER_NAME ="chunks_server_"+ Utils.peerID;
+        Utils.confirmationDeleteThreadRunning = false;
         FileManager.loadMetadata();
 
         System.out.println('\n' + "-------- Peer" +  Utils.peerID + " ready ------" + '\n');
@@ -66,7 +67,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
 
         //check if there are still files to delete
         // ------ DELETE ENHANCEMENT -------
-        Protocol.checkFilesNotFullyDeleted();
+        Protocol.deleteFilesNotFullyDeleted();
         //------------------------
         //------- RECLAIM ENHANCEMENT ----------
         Protocol.startBackUpForFailedFiles();
@@ -138,11 +139,11 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
         Utils.mdr.terminateLoop();
         Utils.mc.terminateLoop();
 
-        System.out.println("oi1");
         threadMdb.join();
         threadMdr.join();
         threadMc.join();
-        System.out.println("oi2");
+
+
         Utils.mdb.closeSocket();
         Utils.mdr.closeSocket();
         Utils.mc.closeSocket();
@@ -159,6 +160,7 @@ public class BackupService extends UnicastRemoteObject implements ServerInterfac
                 try {
                     answer=Protocol.startBackup(req.getOpnd1(), req.getReplication(),req.isEnhancement());
                 } catch (IOException e) {
+                    System.out.println("A problem ocurred with the file you are trying to backup\n\nDescription of the Exception: \n");
                     e.printStackTrace();
                 }
                 break;
