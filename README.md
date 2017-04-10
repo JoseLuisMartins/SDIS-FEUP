@@ -8,9 +8,9 @@ To compile, in linux, use the follow commands:
 To run the peer, use the follow commands:
 * cd scripts/linux
 * sh launchServer.sh X Y 
-	..* In order to be easier to launch the peers, the access point are numbers		
-	..* X represents the access point of the first peer
-	..* Y represents the access point of the last peer
+	- In order to be easier to launch the peers, the access point are numbers		
+	- X represents the access point of the first peer
+	- Y represents the access point of the last peer
 			
 
 To run the client:
